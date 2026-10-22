@@ -1,9 +1,11 @@
 
 from pathlib import Path
 from dataclasses import dataclass
+from PIL import Image
 
 import numpy as np
 import sklearn.model_selection
+import torch
 from torch.utils.data import Dataset
 
 
@@ -22,16 +24,24 @@ class ADNISliceEntry:
 
 
 class ADNIDataset(Dataset):
-    """ADNI Dataset"""
+    """PyTorch dataset for ADNI MRI slices."""
 
     def __init__(self, entries: list[ADNISliceEntry]) -> None:
-        ...
+        self.entries = entries
 
     def __len__(self):
-        ...
+        return len(self.entries)
   
     def __getitem__(self, idx: int):
-        ...
+        entry = self.entries[idx]
+
+        with Image.open(entry.img_path) as image:
+            image = image.convert("L")
+            image_tensor = torch.from_numpy(
+                np.array(image, dtype=np.float32, copy=True)
+            ).unsqueeze(0) / 255.0
+
+        return image_tensor, entry.label
         
 
 def _patient_id_from_path(image_path: Path) -> int:
