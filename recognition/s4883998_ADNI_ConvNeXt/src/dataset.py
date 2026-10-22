@@ -2,6 +2,7 @@
 from pathlib import Path
 from dataclasses import dataclass
 from PIL import Image
+from typing import Callable
 
 import numpy as np
 import sklearn.model_selection
@@ -26,8 +27,13 @@ class ADNISliceEntry:
 class ADNIDataset(Dataset):
     """PyTorch dataset for ADNI MRI slices."""
 
-    def __init__(self, entries: list[ADNISliceEntry]) -> None:
+    def __init__(
+        self,
+        entries: list[ADNISliceEntry], 
+        transform: Callable | None = None
+    ) -> None:
         self.entries = entries
+        self.transform = transform
 
     def __len__(self):
         return len(self.entries)
@@ -41,6 +47,10 @@ class ADNIDataset(Dataset):
                 np.array(image, dtype=np.float32, copy=True)
             ).unsqueeze(0) / 255.0
 
+        if self.transform is not None:
+            image_tensor = self.transform(image_tensor)
+
+
         return image_tensor, entry.label
         
 
@@ -49,6 +59,7 @@ def _patient_id_from_path(image_path: Path) -> int:
     Extract patient ID from MRI image filename / path
     e.g. ~/.../.../396531_78.jpeg -> 396531
     """
+    
     return int(image_path.stem.split("_")[0])
     
 
@@ -85,7 +96,7 @@ def _collect_ADNI_slice_entries(root: Path, split: str) -> list[ADNISliceEntry]:
     return entries
 
 
-def _get_patient_labels(entries: list[ADNISliceEntry]) -> dict[int, int]:
+def get_patient_labels(entries: list[ADNISliceEntry]) -> dict[int, int]:
     """
     Map patients to their diagnosis, checking for conflicting diagnoses
 
@@ -95,6 +106,7 @@ def _get_patient_labels(entries: list[ADNISliceEntry]) -> dict[int, int]:
     Returns:
         Mapping between patient ids to their corresponding label
     """
+
     patient_labels: dict[int, int] = {}
 
     for entry in entries:
@@ -129,8 +141,8 @@ def generate_datasets(
     test_entries  = _collect_ADNI_slice_entries(root, "test")
 
     # Map patient id's to their diagnosis
-    train_labels = _get_patient_labels(train_entries)
-    test_labels  = _get_patient_labels(test_entries)
+    train_labels = get_patient_labels(train_entries)
+    test_labels  = get_patient_labels(test_entries)
     
     # Check overlap between train and test patients
     overlap = train_labels.keys() & test_labels.keys()

@@ -1,6 +1,9 @@
 
 import torch.nn as nn
 
+IN_CHANNELS = 1
+NUM_CLASSES = 2
+
 class SimpleCNN(nn.Module):
     def __init__(self):
         super(SimpleCNN, self).__init__()
