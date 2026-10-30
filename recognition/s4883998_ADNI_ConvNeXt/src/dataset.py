@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from dataclasses import dataclass
 from PIL import Image
@@ -7,14 +6,15 @@ from typing import Callable
 import numpy as np
 import sklearn.model_selection
 import torch
-from torch.utils.data import Dataset
-
+from torch.utils.data import Dataset, DataLoader
 
 DATA_DIR = Path("/home/groups/comp3710/ADNI/AD_NC")
 IMAGE_EXTENSION = ".jpeg"
 
-NC_LABEL = 0 # Normal Control
-AD_LABEL = 1 # Alzheimer's Disease
+NUM_CLASSES = 2
+
+NC_LABEL = 0  # Normal Control
+AD_LABEL = 1  # Alzheimer's Disease
 
 
 # Basic slice entry object
@@ -30,39 +30,40 @@ class ADNIDataset(Dataset):
     """PyTorch dataset for ADNI MRI slices."""
 
     def __init__(
-        self,
-        entries: list[ADNISliceEntry], 
-        transform: Callable | None = None
+        self, entries: list[ADNISliceEntry], transform: Callable | None = None
     ) -> None:
         self.entries = entries
         self.transform = transform
 
     def __len__(self):
         return len(self.entries)
-  
+
     def __getitem__(self, idx: int):
         entry = self.entries[idx]
 
         with Image.open(entry.img_path) as image:
             image = image.convert("L")
-            image_tensor = torch.from_numpy(
-                np.array(image, dtype=np.float32, copy=True)
-            ).unsqueeze(0) / 255.0
+            image_tensor = (
+                torch.from_numpy(
+                    np.array(image, dtype=np.float32, copy=True)
+                ).unsqueeze(0)
+                / 255.0
+            )
 
         if self.transform is not None:
             image_tensor = self.transform(image_tensor)
 
         return image_tensor, entry.label
-        
+
 
 def _patient_id_from_path(image_path: Path) -> int:
     """
     Extract patient ID from MRI image filename / path
     e.g. ~/.../.../396531_78.jpeg -> 396531
     """
-    
+
     return int(image_path.stem.split("_")[0])
-    
+
 
 def _collect_ADNI_slice_entries(root: Path, split: str) -> list[ADNISliceEntry]:
     """
@@ -73,7 +74,7 @@ def _collect_ADNI_slice_entries(root: Path, split: str) -> list[ADNISliceEntry]:
         split (str)  : Dataset split ("train" or "test")
 
     Returns:
-        List of ADNISliceEntry objects for the specified split 
+        List of ADNISliceEntry objects for the specified split
     """
 
     entries: list[ADNISliceEntry] = []
@@ -116,7 +117,7 @@ def get_patient_labels(entries: list[ADNISliceEntry]) -> dict[int, int]:
     for entry in entries:
         patient_id = entry.patient_id
         patient_label = entry.label
-        
+
         prev = patient_labels.setdefault(patient_id, patient_label)
         if prev != patient_label:
             raise ValueError(f"Patient {patient_id} has conflicting diagnoses")
@@ -125,9 +126,7 @@ def get_patient_labels(entries: list[ADNISliceEntry]) -> dict[int, int]:
 
 
 def generate_datasets(
-    root: Path, 
-    validation_split: float, 
-    random_state: int
+    root: Path, validation_split: float, random_state: int
 ) -> tuple[ADNIDataset, ADNIDataset | None, ADNIDataset]:
     """
     Generate PyTorch ADNIDataset objects for train, validation (if needed),
@@ -139,25 +138,25 @@ def generate_datasets(
     """
 
     if not 0 <= validation_split < 1:
-        raise ValueError("validation_split must be in [0, 1).") 
+        raise ValueError("validation_split must be in [0, 1).")
 
     train_entries = _collect_ADNI_slice_entries(root, "train")
-    test_entries  = _collect_ADNI_slice_entries(root, "test")
+    test_entries = _collect_ADNI_slice_entries(root, "test")
 
     # Map patient id's to their diagnosis
     train_labels = get_patient_labels(train_entries)
-    test_labels  = get_patient_labels(test_entries)
-    
+    test_labels = get_patient_labels(test_entries)
+
     # Check overlap between train and test patients
     overlap = train_labels.keys() & test_labels.keys()
     if overlap:
         raise ValueError(f"Patient overlap found between train and test: {overlap}")
 
-    # Patient info verified!! Can now generate datasets
-    ds_test = ADNIDataset(test_entries)
+    # Patient info verief!!
+    # Can now send datasets (Hip Hip Hooray)
 
     if validation_split == 0.0:
-        return ADNIDataset(train_entries), None, ds_test
+        return (ADNIDataset(train_entries), None, ADNIDataset(test_entries))
 
     # Partition train data into train and validation sets
     patient_ids = np.array(sorted(train_labels))
@@ -172,15 +171,27 @@ def generate_datasets(
     )
 
     train_ids = set(train_ids)
-    val_ids   = set(val_ids)
+    val_ids = set(val_ids)
 
     # Assign existing slice entries according to their patient's split
     train_slice_entries = [e for e in train_entries if e.patient_id in train_ids]
-    val_slice_entries   = [e for e in train_entries if e.patient_id in val_ids]
+    val_slice_entries = [e for e in train_entries if e.patient_id in val_ids]
 
     return (
         ADNIDataset(train_slice_entries),
         ADNIDataset(val_slice_entries),
-        ds_test,
+        ADNIDataset(test_entries),
     )
-  
+
+
+def generate_dataloaders(train_ds, val_ds, test_ds, batch_size):
+    """Create training and validation dataloaders"""
+
+    train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_ds, batch_size=batch_size)
+
+    if val_ds is None:
+        return train_loader, None, test_loader
+
+    val_loader = DataLoader(val_ds, batch_size=batch_size)
+    return train_loader, val_loader, test_loader
