@@ -17,6 +17,8 @@ NC_LABEL = 0 # Normal Control
 AD_LABEL = 1 # Alzheimer's Disease
 
 
+# Basic slice entry object
+# Metadata for single MRI image path
 @dataclass(slots=True)
 class ADNISliceEntry:
     patient_id: int
@@ -49,7 +51,6 @@ class ADNIDataset(Dataset):
 
         if self.transform is not None:
             image_tensor = self.transform(image_tensor)
-
 
         return image_tensor, entry.label
         
@@ -92,6 +93,9 @@ def _collect_ADNI_slice_entries(root: Path, split: str) -> list[ADNISliceEntry]:
             patient_id = _patient_id_from_path(img_path)
             entry = ADNISliceEntry(patient_id, label, img_path)
             entries.append(entry)
+
+    if not entries:
+        raise ValueError(f"No entries found in {root / split}")
 
     return entries
 
