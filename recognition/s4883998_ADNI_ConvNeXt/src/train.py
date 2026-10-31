@@ -18,14 +18,14 @@ def train_epoch(
 ):
     """
     Train the model for one epoch
-    
+
     Assumes loss_fn uses reduction="mean", so each batch's
     loss is averaged across its samples.
 
     Returns:
         Average loss and accuracy for the trained epoch
     """
-    
+
     model.train()
 
     total_loss = 0.0
@@ -76,7 +76,7 @@ def evaluate_epoch(
     Returns:
         Average loss and accuracy across validation dataset
     """
-    
+
     model.eval()
 
     total_loss = 0.0
@@ -99,7 +99,7 @@ def evaluate_epoch(
 
             correct_predictions += (predictions == y).sum().item()
             total_samples += batch_size
-        
+
         if total_samples == 0:
             raise ValueError("Evaluate loader is empty")
 
@@ -158,9 +158,7 @@ def train_model(
         )
 
         # Validation
-        val_loss, val_accuracy = evaluate_epoch(
-            model, val_loader, loss_fn, device
-        )
+        val_loss, val_accuracy = evaluate_epoch(model, val_loader, loss_fn, device)
 
         # Recordings
         metrics["train_loss"].append(train_loss)
@@ -188,7 +186,7 @@ def train_model(
     model.load_state_dict(best_model_state)
     torch.save(best_model_state, save_path)
     print(f"\nSaved model from epoch #{best_epoch}")
-    
+
     print("-" * 30)
 
     return model, metrics
@@ -220,7 +218,10 @@ def train_cnn(
 
     # DataLoader generation
     train_loader, val_loader, test_loader = generate_dataloaders(
-        train_ds, val_ds, test_ds, batch_size=batch_size,
+        train_ds,
+        val_ds,
+        test_ds,
+        batch_size=batch_size,
     )
 
     model = ADNICNN().to(device)
@@ -234,8 +235,14 @@ def train_cnn(
 
     # Training
     model, metrics = train_model(
-        model, train_loader, val_loader,
-        loss_fn, optimiser, epochs, device, save_path,
+        model,
+        train_loader,
+        val_loader,
+        loss_fn,
+        optimiser,
+        epochs,
+        device,
+        save_path,
     )
 
     return model, metrics, test_loader
@@ -244,13 +251,12 @@ def train_cnn(
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     train_cnn(
-        root = DATA_DIR,
-        val_split = 0.2,
-        random_state = 42,
-        batch_size = 32,
-        epochs = 20,
-        learning_rate = 0.001,
-        save_path = Path("Model/model.pth"),    
-        device = device,
+        root=DATA_DIR,
+        val_split=0.2,
+        random_state=42,
+        batch_size=32,
+        epochs=20,
+        learning_rate=0.001,
+        save_path=Path("Model/model.pth"),
+        device=device,
     )
-    
