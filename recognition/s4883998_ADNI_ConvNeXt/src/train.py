@@ -9,6 +9,7 @@ from torchvision.transforms import v2
 from dataset import DATA_DIR, generate_datasets, generate_dataloaders
 from models import ADNICNN, ADNI_ConvNeXt
 from transforms import MRINormalise
+from utils import output_cuda_resource_usage
 
 
 def train_epoch(
@@ -111,6 +112,7 @@ def evaluate_epoch(
     return average_loss, accuracy
 
 
+@output_cuda_resource_usage
 def train_model(
     model: nn.Module,
     train_loader: DataLoader,
@@ -201,7 +203,7 @@ if __name__ == "__main__":
     val_split = 0.2
     random_state = 42
     batch_size = 32
-    epochs = 20
+    epochs = 30
     save_path_root = Path("Models/")
     
     train_transforms = v2.Compose([
