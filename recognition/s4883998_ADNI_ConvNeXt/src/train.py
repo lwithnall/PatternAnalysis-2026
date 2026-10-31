@@ -6,7 +6,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from dataset import DATA_DIR, generate_datasets, generate_dataloaders
-from models import ADNICNN
+from models import ADNICNN, ADNI_ConvNeXt
 
 
 def train_epoch(
@@ -36,7 +36,7 @@ def train_epoch(
         X = X.to(device)
         y = y.to(device)
 
-        optimiser.zero_grad()
+        optimiser.zero_grad(set_to_none=True)
 
         pred = model(X)
         loss = loss_fn(pred, y)
@@ -192,71 +192,66 @@ def train_model(
     return model, metrics
 
 
-def train_cnn(
-    root: Path,
-    val_split: float,
-    random_state: int,
-    batch_size: int,
-    epochs: int,
-    learning_rate: float,
-    save_path: Path,
-    device: torch.device,
-):
-    """
-    Run CNN training pipeline.
-
-    Returns:
-        model: CNN with the best validation weights.
-        metrics: Training and validation metrics per epoch.
-        test_loader: DataLoader for final model evaluation.
-    """
-
-    # Dataset generation
-    train_ds, val_ds, test_ds = generate_datasets(
-        root, val_split, random_state=random_state
-    )
-
-    # DataLoader generation
-    train_loader, val_loader, test_loader = generate_dataloaders(
-        train_ds,
-        val_ds,
-        test_ds,
-        batch_size=batch_size,
-    )
-
-    model = ADNICNN().to(device)
-
-    # Loss function and optimiser.
-    loss_fn = nn.CrossEntropyLoss()
-    optimiser = torch.optim.Adam(
-        model.parameters(),
-        lr=learning_rate,
-    )
-
-    # Training
-    model, metrics = train_model(
-        model,
-        train_loader,
-        val_loader,
-        loss_fn,
-        optimiser,
-        epochs,
-        device,
-        save_path,
-    )
-
-    return model, metrics, test_loader
-
-
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    train_cnn(
-        root=DATA_DIR,
-        val_split=0.2,
-        random_state=42,
-        batch_size=32,
-        epochs=20,
-        learning_rate=0.001,
-        save_path=Path("Model/model.pth"),
-        device=device,
+
+    # Configuration
+    val_split = 0.2
+    random_state = 42
+    batch_size = 32
+    epochs = 20
+    save_path_root = Path("Models/")
+
+    print("Getting datasets...")
+    train_ds, val_ds, test_ds = generate_datasets(
+        DATA_DIR, validation_split=val_split, random_state=random_state
+    )
+
+    print("Getting preparing dataloaders...")
+    train_loader, val_loader, test_loader = generate_dataloaders(
+        train_ds, val_ds, test_ds, batch_size=batch_size,
+    )
+
+    print("Configuring ConvNeXt model...")
+    convnext_model = ADNI_ConvNeXt(
+        drop_path_rate=0.2, layer_scale_init_value=1e-6,
+        depths=(2, 2, 4, 2  ),
+        dims=(48, 96, 192, 384),
+    ).to(device)
+    next_loss_fn = nn.CrossEntropyLoss()
+    next_optimiser = torch.optim.AdamW(
+        convnext_model.parameters(), lr=1e-4, weight_decay=0.1
+    )
+
+    print("Training ConvNext...")
+    train_model(
+        convnext_model,
+        train_loader,
+        val_loader,
+        next_loss_fn,
+        next_optimiser,
+        epochs,
+        device,
+        save_path = save_path_root / "convnext.pt"
+    )
+
+    del convnext_model, next_optimiser
+
+    print("Configuring CNN model...")
+    cnn_model = ADNICNN().to(device)
+    cnn_loss_fn = nn.CrossEntropyLoss()
+    cnn_optimiser = torch.optim.Adam(
+        cnn_model.parameters(), lr=0.001
+    )
+
+    print("Training CNN...")
+    train_model(
+        cnn_model,
+        train_loader,
+        val_loader,
+        cnn_loss_fn,
+        cnn_optimiser,
+        epochs,
+        device,
+        save_path = save_path_root / "cnn.pt"
     )
