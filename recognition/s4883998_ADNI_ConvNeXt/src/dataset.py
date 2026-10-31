@@ -126,7 +126,11 @@ def get_patient_labels(entries: list[ADNISliceEntry]) -> dict[int, int]:
 
 
 def generate_datasets(
-    root: Path, validation_split: float, random_state: int
+    root: Path, 
+    validation_split: float, 
+    random_state: int,
+    train_transforms: Callable | None = None,
+    eval_transforms: Callable | None = None,
 ) -> tuple[ADNIDataset, ADNIDataset | None, ADNIDataset]:
     """
     Generate PyTorch ADNIDataset objects for train, validation (if needed),
@@ -156,7 +160,11 @@ def generate_datasets(
     # Can now send datasets (Hip Hip Hooray)
 
     if validation_split == 0.0:
-        return (ADNIDataset(train_entries), None, ADNIDataset(test_entries))
+        return (
+            ADNIDataset(train_entries, train_transforms), 
+            None, 
+            ADNIDataset(test_entries, eval_transforms)
+        )
 
     # Partition train data into train and validation sets
     patient_ids = np.array(sorted(train_labels))
@@ -178,9 +186,9 @@ def generate_datasets(
     val_slice_entries = [e for e in train_entries if e.patient_id in val_ids]
 
     return (
-        ADNIDataset(train_slice_entries),
-        ADNIDataset(val_slice_entries),
-        ADNIDataset(test_entries),
+        ADNIDataset(train_slice_entries, train_transforms),
+        ADNIDataset(val_slice_entries, eval_transforms),
+        ADNIDataset(test_entries, eval_transforms),
     )
 
 

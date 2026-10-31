@@ -4,9 +4,11 @@ from copy import deepcopy
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torchvision.transforms import v2
 
 from dataset import DATA_DIR, generate_datasets, generate_dataloaders
 from models import ADNICNN, ADNI_ConvNeXt
+from transforms import MRINormalise
 
 
 def train_epoch(
@@ -201,10 +203,22 @@ if __name__ == "__main__":
     batch_size = 32
     epochs = 20
     save_path_root = Path("Models/")
+    
+    train_transforms = v2.Compose([
+        v2.RandomAffine(degrees=5, translate=(0.03, 0.03), scale=(0.97, 1.03), fill=0,),
+        MRINormalise(),
+        v2.ColorJitter(brightness=0.1, contrast=0.1),
+    ])
+
+    eval_transforms = v2.Compose([MRINormalise()])
 
     print("Getting datasets...")
     train_ds, val_ds, test_ds = generate_datasets(
-        DATA_DIR, validation_split=val_split, random_state=random_state
+        DATA_DIR, 
+        validation_split=val_split,  
+        train_transforms=train_transforms,
+        eval_transforms=eval_transforms,
+        random_state=random_state,
     )
 
     print("Getting preparing dataloaders...")
