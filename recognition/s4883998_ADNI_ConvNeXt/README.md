@@ -98,6 +98,50 @@ To reproduce experiemnts, the same datasets, directory structure, dependency ver
 * [1] O. E. Gundersen, S. Shamsaliei, and R. J. Isdahl, “Do machine learning platforms provide out-of-the-box reproducibility?,” Future Generation Computer Systems, vol. 126, pp. 34–47, Jan. 2022. https://doi.org/10.1016/j.future.2021.06.014.
 
 ## Input, Output and Plot Examples
+The model accepts individual grayscale MRI slices from the ADNI dataset as input. Images are preprocess before being passed to the model (see Preprocessing). The model produces a binary classification indicating whether the image corresponds to an Alzheimer's Disease (AD) or Cognitively Normal (NC) patient. Images are 240x258 pixels in size and converted to float32 tensors before processing. </br>
+
+Example Input Image: </br>
+<img src="images/ADNI_MRI_Image_Example.png"
+     alt="ConvNeXt Block Structure"
+     width="400">
+
+During training, the model reports training and validation loss after each epoch. This provides an indcator of how effectively the model is learning, and helps see if it is overfitting, or making little progress:
+
+Example of the output for Epochs 1-5 of ConvNeXt training stage:
+```
+Epoch [1/20] | Train loss: 0.7017 | Train acc: 50.44% | Val loss: 0.6910 | Val acc: 51.85%
+Epoch [2/20] | Train loss: 0.6935 | Train acc: 51.59% | Val loss: 0.6911 | Val acc: 51.85%
+Epoch [3/20] | Train loss: 0.6928 | Train acc: 51.90% | Val loss: 0.6868 | Val acc: 58.54%
+Epoch [4/20] | Train loss: 0.6889 | Train acc: 53.84% | Val loss: 0.6758 | Val acc: 58.80%
+Epoch [5/20] | Train loss: 0.6583 | Train acc: 60.52% | Val loss: 0.5989 | Val acc: 68.43%
+```
+
+After the designated number of Epochs have finished (20 in this case), the results are compiled into a graph. </br>
+
+Example ConvNeXt Training Output Image: </br>
+<img src="images/ConvNeXt_Training_plot.png"
+     alt="ConvNeXt Training Data"
+     width="800">
+
+And the validation metrics and resource usage measurements are output:
+```Validation metrics:
+NC precision: 0.8062
+AD precision: 0.7671
+NC recall:    0.7746
+AD recall:    0.7995
+Macro-F1:     0.7865
+AUROC:        0.8548
+------------------------------
+Resource usage details for: train_model
+
+Training runtime: 1649.38 seconds
+Peak GPU memory allocated: 1500.84 MB
+Peak GPU memory reserved:  1724.00 MB
+```
+
+
+
+Together, these examples demonstrate the complete inference pipeline, from an individual MRI slice to a predicted diagnostic class, while the evaluation plots provide quantitative and qualitative evidence of model performance.
 
 ## Preprocessing
 MRI images were provided as `.jpeg` files in the designated ADNI data directory (`/home/groups/comp3710/ADNI/AD_NC`). An initial audit was performed over the dataset (refer to the Feasibility Review section), confirming no patient overlap between the original training and test partitions, and no conflicting diagnoses for individual patients. Each patient had 20 associated MRI slices, with no unusable datapoints identified (e.g. blank images or corrupted files). Images were loaded as PIL objects using Python's Pillow library and converted to grayscale, ensuring a single-channel representation. They were subsequently converted to `float32` PyTorch tensors (see the `ADNIDataset` class in `dataset.py`), with pixel values scaled to the range [0, 1]. Original image dimensions of 240 × 258 pixels were retained, with no resizing applied.

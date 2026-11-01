@@ -6,6 +6,10 @@ from inspect import signature
 
 
 def output_cuda_resource_usage(func):
+    """
+    Wrapper utility to output VRAM and runtime of supplied function
+    """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
 
