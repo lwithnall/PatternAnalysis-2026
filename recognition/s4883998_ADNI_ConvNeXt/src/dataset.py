@@ -26,6 +26,11 @@ class ADNISliceEntry:
     img_path: Path
 
 
+######################
+# ADNI DATASET CLASS
+######################
+
+
 class ADNIDataset(Dataset):
     """PyTorch dataset for ADNI MRI slices."""
 
@@ -55,6 +60,11 @@ class ADNIDataset(Dataset):
             image_tensor = self.transform(image_tensor)
 
         return image_tensor, entry.label
+
+
+###########################
+# DATA HANDLING UTILITIES
+###########################
 
 
 def _patient_id_from_path(image_path: Path) -> int:
@@ -126,6 +136,11 @@ def get_patient_labels(entries: list[ADNISliceEntry]) -> dict[int, int]:
     return patient_labels
 
 
+##############
+# GENERATORS
+##############
+
+
 def generate_datasets(
     root: Path, 
     validation_split: float, 
@@ -138,8 +153,11 @@ def generate_datasets(
     and test data
 
     Args:
-        root (Path) : Root directory of the dataset
-        validation_split (float) : %'age of train data to use in validation set
+        root : Root directory of the dataset
+        validation_split : %'age of train data to use in validation set
+        random_state : seed for random generators
+        train_transforms : transformers to run on train datasets
+        eval_transforms : transforms to run on evaluation / test datasets
     """
 
     if not 0 <= validation_split < 1:

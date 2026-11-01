@@ -6,10 +6,26 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision.transforms import v2
 
+import matplotlib
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
+
+from sklearn.metrics import (
+    precision_recall_fscore_support,
+    roc_auc_score,
+)
+
 from dataset import DATA_DIR, generate_datasets, generate_dataloaders
 from models import ADNICNN, ADNI_ConvNeXt
 from transforms import MRINormalise
 from utils import output_cuda_resource_usage
+from plotting import plot_learning_curves
+
+
+##################
+# EPOCH HANDLERS 
+##################
 
 
 def train_epoch(
@@ -98,18 +114,81 @@ def evaluate_epoch(
             # Metrics
             batch_size = y.size(0)
             total_loss += loss.item() * batch_size
-            predictions = pred.argmax(dim=1)
 
+            predictions = pred.argmax(dim=1)
             correct_predictions += (predictions == y).sum().item()
             total_samples += batch_size
 
-        if total_samples == 0:
-            raise ValueError("Evaluate loader is empty")
+    if total_samples == 0:
+        raise ValueError("Evaluate loader is empty")
 
-        average_loss = total_loss / total_samples
-        accuracy = correct_predictions / total_samples
+    average_loss = total_loss / total_samples
+    accuracy = correct_predictions / total_samples
 
     return average_loss, accuracy
+
+
+##############
+# EVALUATION
+##############
+
+
+def evaluate_metrics(
+    model: nn.Module,
+    val_loader: DataLoader,
+    device: torch.device,
+):
+    """
+    Calculate validation metrics and generate a confusion matrix
+    and ROC curve.
+    """
+
+    model.eval()
+
+    true_labels = []
+    predicted_labels = []
+    predicted_probabilities = []
+
+    with torch.no_grad():
+        for X, y in val_loader:
+            X = X.to(device)
+
+            # Forward pass
+            logits = model(X)
+            probabilities = torch.softmax(logits, dim=1)
+            predictions = logits.argmax(dim=1)
+
+            true_labels.extend(y.cpu().numpy())
+            predicted_labels.extend(predictions.cpu().numpy())
+            predicted_probabilities.extend(probabilities[:, 1].cpu().numpy())
+
+    # Per-class precision, recall and F1
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        true_labels,
+        predicted_labels,
+        labels=[0, 1],
+        zero_division=0,
+    )
+
+    # Macro-F1
+    macro_f1 = f1.mean()
+
+    # AUROC using AD probabilities
+    auroc = roc_auc_score(true_labels, predicted_probabilities)
+
+    return {
+        "precision_nc": precision[0],
+        "precision_ad": precision[1],
+        "recall_nc": recall[0],
+        "recall_ad": recall[1],
+        "macro_f1": macro_f1,
+        "auroc": auroc,
+    }
+
+
+############
+# TRAINING
+############
 
 
 @output_cuda_resource_usage
@@ -157,9 +236,7 @@ def train_model(
 
     for epoch in range(epochs):
         # Training
-        train_loss, train_accuracy = train_epoch(
-            model, train_loader, loss_fn, optimiser, device
-        )
+        train_loss, train_accuracy = train_epoch(model, train_loader, loss_fn, optimiser, device)
 
         # Validation
         val_loss, val_accuracy = evaluate_epoch(model, val_loader, loss_fn, device)
@@ -170,6 +247,7 @@ def train_model(
         metrics["val_loss"].append(val_loss)
         metrics["val_accuracy"].append(val_accuracy)
 
+        # Storing model w/ best validation loss
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             best_epoch = epoch + 1
@@ -189,7 +267,26 @@ def train_model(
 
     model.load_state_dict(best_model_state)
     torch.save(best_model_state, save_path)
+
     print(f"\nSaved model from epoch #{best_epoch}")
+
+    # Generate learning curves
+    plot_dir = save_path.parent / f"{save_path.stem}_plots"
+    plot_learning_curves(
+        metrics,
+        plot_dir / "learning_curves.png",
+    )
+
+    # Calculate final validation metrics using best model
+    print("\nValidation metrics:")
+    results = evaluate_metrics(model, val_loader, device)
+
+    print(f"NC precision: {results['precision_nc']:.4f}")
+    print(f"AD precision: {results['precision_ad']:.4f}")
+    print(f"NC recall:    {results['recall_nc']:.4f}")
+    print(f"AD recall:    {results['recall_ad']:.4f}")
+    print(f"Macro-F1:     {results['macro_f1']:.4f}")
+    print(f"AUROC:        {results['auroc']:.4f}")
 
     print("-" * 30)
 
@@ -203,7 +300,7 @@ if __name__ == "__main__":
     val_split = 0.2
     random_state = 42
     batch_size = 32
-    epochs = 30
+    epochs = 20
     save_path_root = Path("Models/")
     
     train_transforms = v2.Compose([
@@ -224,7 +321,7 @@ if __name__ == "__main__":
     )
 
     print("Getting preparing dataloaders...")
-    train_loader, val_loader, test_loader = generate_dataloaders(
+    train_loader, val_loader, _ = generate_dataloaders(
         train_ds, val_ds, test_ds, batch_size=batch_size,
     )
 
@@ -234,6 +331,7 @@ if __name__ == "__main__":
         depths=(2, 2, 4, 2  ),
         dims=(48, 96, 192, 384),
     ).to(device)
+
     next_loss_fn = nn.CrossEntropyLoss()
     next_optimiser = torch.optim.AdamW(
         convnext_model.parameters(), lr=1e-4, weight_decay=0.1
