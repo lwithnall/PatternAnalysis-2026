@@ -139,9 +139,7 @@ Peak GPU memory allocated: 1500.84 MB
 Peak GPU memory reserved:  1724.00 MB
 ```
 
-
-
-Together, these examples demonstrate the complete inference pipeline, from an individual MRI slice to a predicted diagnostic class, while the evaluation plots provide quantitative and qualitative evidence of model performance.
+These outputs are returned for the training phase of both the ConvNeXt model and the CNN model.
 
 ## Preprocessing
 MRI images were provided as `.jpeg` files in the designated ADNI data directory (`/home/groups/comp3710/ADNI/AD_NC`). An initial audit was performed over the dataset (refer to the Feasibility Review section), confirming no patient overlap between the original training and test partitions, and no conflicting diagnoses for individual patients. Each patient had 20 associated MRI slices, with no unusable datapoints identified (e.g. blank images or corrupted files). Images were loaded as PIL objects using Python's Pillow library and converted to grayscale, ensuring a single-channel representation. They were subsequently converted to `float32` PyTorch tensors (see the `ADNIDataset` class in `dataset.py`), with pixel values scaled to the range [0, 1]. Original image dimensions of 240 × 258 pixels were retained, with no resizing applied.
@@ -173,3 +171,9 @@ I gave it an unfinished table (I had written the first two rows myself), then go
 **Task:** Exact same as entry 2 except with the appendix tables for feasability review.</br>
 **Notes:**</br>
 See enty 2. Although I just threw the data at it this time. I didn't start the tables at all. Verfieid output visually. 
+
+<u>**Entry 4**</u></br>
+**Model:** ChatGPT </br>
+**Task:** Asked it to generate the `print_evaluation_results` function in `predict.py`.</br>
+**Notes:**</br>
+Basic printing function that takes a result dict and prints it (neatly-ish) to the terminal. Verified by looking at the output / checking that the parameters were printed in the right order / way.
