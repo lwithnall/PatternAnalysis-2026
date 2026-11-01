@@ -32,6 +32,7 @@ def output_cuda_resource_usage(func):
 
             runtime = time.perf_counter() - start_time
 
+            print(f"Resource usage details for: {func.__name__}")
             print(f"\nTraining runtime: {runtime:.2f} seconds")
 
             peak_allocated = torch.cuda.max_memory_allocated(device) / (1024 ** 2)
