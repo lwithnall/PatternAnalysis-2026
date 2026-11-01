@@ -170,7 +170,7 @@ Epoch [5/20] | Train loss: 0.6583 | Train acc: 60.52% | Val loss: 0.5989 | Val a
 After the designated number of Epochs have finished (20 in this case), the results are compiled into a graph. </br>
 
 Example ConvNeXt Training Output Image: </br>
-<img src="images/Results/ConvNeXt_Training_plot.png"
+<img src="images/TrainingResults/ConvNeXt_Training_plot.png"
      alt="ConvNeXt Training Data"
      width="800">
 
@@ -192,6 +192,53 @@ Peak GPU memory reserved:  1724.00 MB
 
 These outputs are returned for the training phase of both the ConvNeXt model and the CNN model.
 
+Example testing output contains a breadth of classification, confidence, and computational metrics. Here is an excerpt of a ConvNexT output:
+```
+============================================================
+ EVALUATION RESULTS: ConvNeXt
+============================================================
+Patients evaluated: 450
+MRI slices evaluated: 9000
+
+------------------------------------------------------------
+CLASSIFICATION METRICS
+------------------------------------------------------------
+Accuracy:       0.6933
+Macro-F1:       0.6918
+AUROC:          0.7804
+Average Prec.:  0.7768
+
+Per-class metrics:
+Class         Precision       Recall     F1-score
+NC               0.6745       0.7577       0.7137
+AD               0.7179       0.6278       0.6699
+
+Confusion matrix:
+                Predicted NC    Predicted AD
+Actual NC                172              55
+Actual AD                 83             140
+
+------------------------------------------------------------
+CONFIDENCE METRICS
+------------------------------------------------------------
+Confidence threshold:      90%
+Coverage:                  11.56%
+High-confidence accuracy: 0.9038
+
+------------------------------------------------------------
+COMPUTATIONAL METRICS
+------------------------------------------------------------
+Total parameters:       4,219,922
+Trainable parameters:   4,219,922
+Inference runtime:      17.24 s
+Latency per slice:      1.92 ms
+Throughput:             522.08 slices/s
+Peak GPU allocated:     256.74 MB
+Peak GPU reserved:      330.00 MB
+```
+
+Other images produced in this phase can be seen throughout the Open Research Dilemma Investigation part of this document.
+
 ## Preprocessing
 MRI images were provided as `.jpeg` files in the designated ADNI data directory (`/home/groups/comp3710/ADNI/AD_NC`). An initial audit was performed over the dataset (refer to the Feasibility Review section), confirming no patient overlap between the original training and test partitions, and no conflicting diagnoses for individual patients. Each patient had 20 associated MRI slices, with no unusable datapoints identified (e.g. blank images or corrupted files). Images were loaded as PIL objects using Python's Pillow library and converted to grayscale, ensuring a single-channel representation. They were subsequently converted to `float32` PyTorch tensors (see the `ADNIDataset` class in `dataset.py`), with pixel values scaled to the range [0, 1]. Original image dimensions of 240 × 258 pixels were retained, with no resizing applied.
 
@@ -203,6 +250,12 @@ Additional transformations were applied separately to the training and evaluatio
 * Random affine transformations: Random geometric transformations, such as rotation and translation (training only).
 
 ## Open Research Dilemma Investigation
+<u>Research Dilemma</u> </br>
+This investigation aims to evaluate whether increased architectural complexity provides meaningful improvmenet in the classification of Alzheimer's disease against ADNI MRI images. Model complexity is often thought to correspond to representational capacity, and consequently, improved classification performance. ConvNeXt and CNN models will be trained and tested on the aforementioned ADNI dataset to attempt to ascertain whether the complexity to accuracy debate has any merit. Both models produced slice-level predictions, which were aggregated into patient-level predictions by averaging the predicted AD probabilities across each patient's slices. 
+</br></br>
+
+<u>Quantitative Benchmarking</u> </br>
+
 
 ## AI Intelligence Usage Disclosure
 <u>**Entry 1**</u></br>
