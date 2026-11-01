@@ -1,0 +1,86 @@
+Getting datasets...
+Getting preparing dataloaders...
+Configuring ConvNeXt model...
+Training ConvNext...
+Training on: cuda
+Epochs: 20
+==============================
+Epoch [1/20] | Train loss: 0.7017 | Train acc: 50.44% | Val loss: 0.6910 | Val acc: 51.85%
+Epoch [2/20] | Train loss: 0.6935 | Train acc: 51.59% | Val loss: 0.6911 | Val acc: 51.85%
+Epoch [3/20] | Train loss: 0.6928 | Train acc: 51.90% | Val loss: 0.6868 | Val acc: 58.54%
+Epoch [4/20] | Train loss: 0.6889 | Train acc: 53.84% | Val loss: 0.6758 | Val acc: 58.80%
+Epoch [5/20] | Train loss: 0.6583 | Train acc: 60.52% | Val loss: 0.5989 | Val acc: 68.43%
+Epoch [6/20] | Train loss: 0.5902 | Train acc: 68.85% | Val loss: 0.5540 | Val acc: 72.55%
+Epoch [7/20] | Train loss: 0.5611 | Train acc: 71.27% | Val loss: 0.5486 | Val acc: 73.24%
+Epoch [8/20] | Train loss: 0.5487 | Train acc: 72.17% | Val loss: 0.5374 | Val acc: 74.40%
+Epoch [9/20] | Train loss: 0.5346 | Train acc: 73.19% | Val loss: 0.5328 | Val acc: 74.38%
+Epoch [10/20] | Train loss: 0.5265 | Train acc: 73.64% | Val loss: 0.5245 | Val acc: 74.28%
+Epoch [11/20] | Train loss: 0.5191 | Train acc: 74.63% | Val loss: 0.5172 | Val acc: 75.07%
+Epoch [12/20] | Train loss: 0.5097 | Train acc: 74.79% | Val loss: 0.5162 | Val acc: 75.79%
+Epoch [13/20] | Train loss: 0.5032 | Train acc: 75.58% | Val loss: 0.5458 | Val acc: 75.14%
+Epoch [14/20] | Train loss: 0.4958 | Train acc: 76.09% | Val loss: 0.5017 | Val acc: 75.74%
+Epoch [15/20] | Train loss: 0.4901 | Train acc: 76.51% | Val loss: 0.5123 | Val acc: 76.00%
+Epoch [16/20] | Train loss: 0.4866 | Train acc: 76.59% | Val loss: 0.5051 | Val acc: 75.58%
+Epoch [17/20] | Train loss: 0.4794 | Train acc: 77.23% | Val loss: 0.5095 | Val acc: 76.69%
+Epoch [18/20] | Train loss: 0.4687 | Train acc: 77.80% | Val loss: 0.5076 | Val acc: 76.44%
+Epoch [19/20] | Train loss: 0.4641 | Train acc: 78.26% | Val loss: 0.4712 | Val acc: 78.66%
+Epoch [20/20] | Train loss: 0.4596 | Train acc: 78.56% | Val loss: 0.4931 | Val acc: 78.08%
+
+Saved model from epoch #19
+Saved learning curves: Models/convnext_plots/learning_curves.png
+
+Validation metrics:
+NC precision: 0.8062
+AD precision: 0.7671
+NC recall:    0.7746
+AD recall:    0.7995
+Macro-F1:     0.7865
+AUROC:        0.8548
+------------------------------
+Resource usage details for: train_model
+
+Training runtime: 1649.38 seconds
+Peak GPU memory allocated: 1500.84 MB
+Peak GPU memory reserved:  1724.00 MB
+Configuring CNN model...
+Training CNN...
+Training on: cuda
+Epochs: 20
+==============================
+Epoch [1/20] | Train loss: 0.6926 | Train acc: 51.41% | Val loss: 0.6921 | Val acc: 51.85%
+Epoch [2/20] | Train loss: 0.6863 | Train acc: 53.36% | Val loss: 0.7388 | Val acc: 52.06%
+Epoch [3/20] | Train loss: 0.6318 | Train acc: 64.32% | Val loss: 0.7566 | Val acc: 62.27%
+Epoch [4/20] | Train loss: 0.6020 | Train acc: 67.27% | Val loss: 0.6876 | Val acc: 64.40%
+Epoch [5/20] | Train loss: 0.5966 | Train acc: 68.06% | Val loss: 0.6033 | Val acc: 66.18%
+Epoch [6/20] | Train loss: 0.5873 | Train acc: 68.80% | Val loss: 0.7212 | Val acc: 64.03%
+Epoch [7/20] | Train loss: 0.5831 | Train acc: 69.05% | Val loss: 0.5883 | Val acc: 66.69%
+Epoch [8/20] | Train loss: 0.5771 | Train acc: 69.83% | Val loss: 0.5935 | Val acc: 67.66%
+Epoch [9/20] | Train loss: 0.5691 | Train acc: 70.95% | Val loss: 0.6343 | Val acc: 67.11%
+Epoch [10/20] | Train loss: 0.5605 | Train acc: 71.52% | Val loss: 0.6209 | Val acc: 68.10%
+Epoch [11/20] | Train loss: 0.5579 | Train acc: 71.67% | Val loss: 0.5723 | Val acc: 69.33%
+Epoch [12/20] | Train loss: 0.5507 | Train acc: 72.36% | Val loss: 0.5661 | Val acc: 68.94%
+Epoch [13/20] | Train loss: 0.5456 | Train acc: 72.72% | Val loss: 0.5850 | Val acc: 70.37%
+Epoch [14/20] | Train loss: 0.5445 | Train acc: 73.21% | Val loss: 0.5710 | Val acc: 70.23%
+Epoch [15/20] | Train loss: 0.5360 | Train acc: 73.83% | Val loss: 0.5699 | Val acc: 70.76%
+Epoch [16/20] | Train loss: 0.5341 | Train acc: 73.82% | Val loss: 0.5575 | Val acc: 70.79%
+Epoch [17/20] | Train loss: 0.5267 | Train acc: 74.59% | Val loss: 0.5382 | Val acc: 70.76%
+Epoch [18/20] | Train loss: 0.5276 | Train acc: 74.25% | Val loss: 0.7818 | Val acc: 64.00%
+Epoch [19/20] | Train loss: 0.5222 | Train acc: 74.59% | Val loss: 0.6714 | Val acc: 67.06%
+Epoch [20/20] | Train loss: 0.5153 | Train acc: 75.27% | Val loss: 0.5948 | Val acc: 69.88%
+
+Saved model from epoch #17
+Saved learning curves: Models/cnn_plots/learning_curves.png
+
+Validation metrics:
+NC precision: 0.7028
+AD precision: 0.7138
+NC recall:    0.7558
+AD recall:    0.6558
+Macro-F1:     0.7059
+AUROC:        0.8051
+------------------------------
+Resource usage details for: train_model
+
+Training runtime: 1273.63 seconds
+Peak GPU memory allocated: 842.08 MB
+Peak GPU memory reserved:  3296.00 MB

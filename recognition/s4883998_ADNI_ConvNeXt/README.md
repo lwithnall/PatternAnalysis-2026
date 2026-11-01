@@ -89,7 +89,58 @@ Current model implementations reside within the 8GB VRAM requirement. The projec
 ## Dependencies
 Ripped from requirements.txt. Dependency list generated using the `pip freeze` command.
 ```
-NOTE TO SELF: REFILL THIS (pretty please)
+asttokens==3.0.2
+cloudpickle==3.1.2
+colorama==0.4.6
+comm==0.2.3
+contourpy==1.4.0
+cycler==0.12.1
+debugpy==1.8.22
+executing==2.3.0
+filelock==4.2.6
+fonttools==4.67.0
+fsspec==2026.9.0
+ipykernel==7.4.0
+ipython==9.17.1
+ipython_pygments_lexers==1.1.1
+jedi==0.20.1
+Jinja2==3.1.6
+joblib==1.6.0
+jupyter_client==8.10.0
+jupyter_core==5.9.1
+kiwisolver==1.5.1
+MarkupSafe==3.0.4
+matplotlib==3.11.2
+matplotlib-inline==0.2.2
+mpmath==1.3.0
+narwhals==2.27.1
+nest-asyncio2==1.7.4
+networkx==3.7
+nibabel==5.4.2
+numpy==2.5.4
+packaging==26.3
+parso==0.8.7
+pillow==13.0.0
+platformdirs==4.13.5
+prompt_toolkit==3.0.53
+psutil==7.2.2
+pure_eval==0.2.4
+Pygments==2.21.0
+pyparsing==3.3.3
+python-dateutil==2.9.0.post0
+pyzmq==27.2.0
+scikit-learn==1.9.1
+scipy==1.18.1
+setuptools==84.2.1
+six==1.17.0
+stack-data==0.6.3
+sympy==1.14.0
+threadpoolctl==3.7.0
+torch==2.15.0
+tornado==6.5.10
+traitlets==5.16.1
+typing_extensions==4.16.0
+wcwidth==0.9.3
 ```
 
 ## Result Reproducability
@@ -119,7 +170,7 @@ Epoch [5/20] | Train loss: 0.6583 | Train acc: 60.52% | Val loss: 0.5989 | Val a
 After the designated number of Epochs have finished (20 in this case), the results are compiled into a graph. </br>
 
 Example ConvNeXt Training Output Image: </br>
-<img src="images/ConvNeXt_Training_plot.png"
+<img src="images/Results/ConvNeXt_Training_plot.png"
      alt="ConvNeXt Training Data"
      width="800">
 
