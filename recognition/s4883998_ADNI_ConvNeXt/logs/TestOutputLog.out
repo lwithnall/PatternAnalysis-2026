@@ -1,0 +1,316 @@
+Using device: cuda
+Loading test dataset...
+Loading ConvNeXt...
+Evaluating ConvNeXt...
+
+============================================================
+ EVALUATION RESULTS: ConvNeXt
+============================================================
+Patients evaluated: 450
+MRI slices evaluated: 9000
+
+------------------------------------------------------------
+CLASSIFICATION METRICS
+------------------------------------------------------------
+Accuracy:       0.6933
+Macro-F1:       0.6918
+AUROC:          0.7804
+Average Prec.:  0.7768
+
+Per-class metrics:
+Class         Precision       Recall     F1-score
+NC               0.6745       0.7577       0.7137
+AD               0.7179       0.6278       0.6699
+
+Confusion matrix:
+                Predicted NC    Predicted AD
+Actual NC                172              55
+Actual AD                 83             140
+
+------------------------------------------------------------
+CONFIDENCE METRICS
+------------------------------------------------------------
+Confidence threshold:      90%
+Coverage:                  11.56%
+High-confidence accuracy: 0.9038
+
+------------------------------------------------------------
+COMPUTATIONAL METRICS
+------------------------------------------------------------
+Total parameters:       4,219,922
+Trainable parameters:   4,219,922
+Inference runtime:      17.24 s
+Latency per slice:      1.92 ms
+Throughput:             522.08 slices/s
+Peak GPU allocated:     256.74 MB
+Peak GPU reserved:      330.00 MB
+
+============================================================
+
+Saved plot: Models/evaluation/convnext/confusion_matrix.png
+Saved plot: Models/evaluation/convnext/roc_curve.png
+Saved plot: Models/evaluation/convnext/precision_recall_curve.png
+Saved plot: Models/evaluation/convnext/prediction_distribution.png
+Saved plot: Models/evaluation/convnext/confidence_coverage.png
+
+============================================================
+SELECTED ERROR CASES
+============================================================
+
+Error case 1
+Patient ID:          985197
+True diagnosis:      AD
+Predicted diagnosis: NC
+AD probability:      0.0031
+Prediction confidence: 99.69%
+Number of slices:    20
+Mean slice AD probability: 0.0031
+Min slice AD probability:  0.0027
+Max slice AD probability:  0.0042
+MRI slice paths:
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_102.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_106.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_94.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_98.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_112.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_99.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_113.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_103.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_107.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_95.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_111.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_109.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_101.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_105.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_97.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_100.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_104.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_96.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_110.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_108.jpeg
+
+Error case 2
+Patient ID:          1223029
+True diagnosis:      AD
+Predicted diagnosis: NC
+AD probability:      0.0609
+Prediction confidence: 93.91%
+Number of slices:    20
+Mean slice AD probability: 0.0609
+Min slice AD probability:  0.0129
+Max slice AD probability:  0.4746
+MRI slice paths:
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_97.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_102.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_106.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_112.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_113.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_96.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_103.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_107.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_109.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_111.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_98.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_101.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_94.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_105.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_100.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_95.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_104.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_108.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_110.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_99.jpeg
+
+Error case 3
+Patient ID:          1240482
+True diagnosis:      AD
+Predicted diagnosis: NC
+AD probability:      0.0683
+Prediction confidence: 93.17%
+Number of slices:    20
+Mean slice AD probability: 0.0683
+Min slice AD probability:  0.0158
+Max slice AD probability:  0.3757
+MRI slice paths:
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_100.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_104.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_95.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_110.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_99.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_108.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_111.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_98.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_109.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_101.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_105.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_94.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_113.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_103.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_107.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_96.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_102.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_106.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_97.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_112.jpeg
+
+ConvNeXt stuff done =====================
+
+
+Loading CNN...
+Evaluating CNN...
+
+============================================================
+ EVALUATION RESULTS: CNN
+============================================================
+Patients evaluated: 450
+MRI slices evaluated: 9000
+
+------------------------------------------------------------
+CLASSIFICATION METRICS
+------------------------------------------------------------
+Accuracy:       0.7022
+Macro-F1:       0.6993
+AUROC:          0.7753
+Average Prec.:  0.7944
+
+Per-class metrics:
+Class         Precision       Recall     F1-score
+NC               0.6742       0.7930       0.7287
+AD               0.7432       0.6099       0.6700
+
+Confusion matrix:
+                Predicted NC    Predicted AD
+Actual NC                180              47
+Actual AD                 87             136
+
+------------------------------------------------------------
+CONFIDENCE METRICS
+------------------------------------------------------------
+Confidence threshold:      90%
+Coverage:                  9.78%
+High-confidence accuracy: 0.9091
+
+------------------------------------------------------------
+COMPUTATIONAL METRICS
+------------------------------------------------------------
+Total parameters:       92,930
+Trainable parameters:   92,930
+Inference runtime:      12.95 s
+Latency per slice:      1.44 ms
+Throughput:             694.92 slices/s
+Peak GPU allocated:     435.98 MB
+Peak GPU reserved:      442.00 MB
+
+============================================================
+
+Saved plot: Models/evaluation/cnn/confusion_matrix.png
+Saved plot: Models/evaluation/cnn/roc_curve.png
+Saved plot: Models/evaluation/cnn/precision_recall_curve.png
+Saved plot: Models/evaluation/cnn/prediction_distribution.png
+Saved plot: Models/evaluation/cnn/confidence_coverage.png
+
+============================================================
+SELECTED ERROR CASES
+============================================================
+
+Error case 1
+Patient ID:          985197
+True diagnosis:      AD
+Predicted diagnosis: NC
+AD probability:      0.0000
+Prediction confidence: 100.00%
+Number of slices:    20
+Mean slice AD probability: 0.0000
+Min slice AD probability:  0.0000
+Max slice AD probability:  0.0000
+MRI slice paths:
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_102.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_106.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_94.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_98.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_112.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_99.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_113.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_103.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_107.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_95.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_111.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_109.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_101.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_105.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_97.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_100.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_104.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_96.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_110.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/985197_108.jpeg
+
+Error case 2
+Patient ID:          1398870
+True diagnosis:      AD
+Predicted diagnosis: NC
+AD probability:      0.0380
+Prediction confidence: 96.20%
+Number of slices:    20
+Mean slice AD probability: 0.0380
+Min slice AD probability:  0.0095
+Max slice AD probability:  0.1160
+MRI slice paths:
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_99.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_112.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_95.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_106.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_102.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_107.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_94.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_103.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_98.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_113.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_96.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_105.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_101.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_109.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_111.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_108.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_110.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_104.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_97.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_100.jpeg
+
+Error case 3
+Patient ID:          1240482
+True diagnosis:      AD
+Predicted diagnosis: NC
+AD probability:      0.0437
+Prediction confidence: 95.63%
+Number of slices:    20
+Mean slice AD probability: 0.0437
+Min slice AD probability:  0.0114
+Max slice AD probability:  0.1158
+MRI slice paths:
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_100.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_104.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_95.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_110.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_99.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_108.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_111.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_98.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_109.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_101.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_105.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_94.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_113.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_103.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_107.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_96.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_102.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_106.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_97.jpeg
+  /home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_112.jpeg
+
+CNN stuff done =====================
+
+
+[{'patient_id': 985197, 'true_label': 1, 'predicted_label': 0, 'ad_probability': 0.003130348864942789, 'confidence': 0.9968696511350572, 'num_slices': 20, 'slice_paths': [PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_102.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_106.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_94.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_98.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_112.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_99.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_113.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_103.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_107.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_95.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_111.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_109.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_101.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_105.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_97.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_100.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_104.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_96.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_110.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_108.jpeg')], 'slice_ad_probabilities': [0.003286450169980526, 0.0027910966891795397, 0.002658500336110592, 0.0031434218399226665, 0.004192300606518984, 0.0035213364753872156, 0.0035819020122289658, 0.002916609402745962, 0.002920100698247552, 0.002777598798274994, 0.0034882028121501207, 0.0030730373691767454, 0.0032489518634974957, 0.002711973385885358, 0.0030298151541501284, 0.00324399396777153, 0.002785302931442857, 0.003091290593147278, 0.0031529932748526335, 0.0029920977540314198]}, {'patient_id': 1223029, 'true_label': 1, 'predicted_label': 0, 'ad_probability': 0.060927946120500565, 'confidence': 0.9390720538794994, 'num_slices': 20, 'slice_paths': [PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_97.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_102.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_106.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_112.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_113.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_96.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_103.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_107.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_109.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_111.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_98.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_101.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_94.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_105.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_100.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_95.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_104.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_108.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_110.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1223029_99.jpeg')], 'slice_ad_probabilities': [0.014980696141719818, 0.02556491084396839, 0.09849411249160767, 0.03255939111113548, 0.028556568548083305, 0.02638174593448639, 0.06998948007822037, 0.051891036331653595, 0.025183994323015213, 0.03146608546376228, 0.02055402658879757, 0.012990082614123821, 0.012926033698022366, 0.47464969754219055, 0.013073455542325974, 0.015657415613532066, 0.16393855214118958, 0.05255996435880661, 0.030632583424448967, 0.01650899648666382]}, {'patient_id': 1240482, 'true_label': 1, 'predicted_label': 0, 'ad_probability': 0.06831918656826019, 'confidence': 0.9316808134317398, 'num_slices': 20, 'slice_paths': [PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_100.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_104.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_95.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_110.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_99.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_108.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_111.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_98.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_109.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_101.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_105.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_94.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_113.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_103.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_107.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_96.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_102.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_106.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_97.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_112.jpeg')], 'slice_ad_probabilities': [0.016043437644839287, 0.37571579217910767, 0.10480260103940964, 0.03369244560599327, 0.030233973637223244, 0.01743764616549015, 0.05111182481050491, 0.07535794377326965, 0.020615996792912483, 0.015811333432793617, 0.06527020782232285, 0.11103300005197525, 0.0927744135260582, 0.029041128233075142, 0.031655579805374146, 0.050298891961574554, 0.04872934892773628, 0.03037112019956112, 0.10748837888240814, 0.05889865383505821]}]
+[{'patient_id': 985197, 'true_label': 1, 'predicted_label': 0, 'ad_probability': 2.837636126074017e-09, 'confidence': 0.9999999971623639, 'num_slices': 20, 'slice_paths': [PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_102.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_106.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_94.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_98.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_112.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_99.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_113.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_103.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_107.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_95.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_111.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_109.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_101.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_105.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_97.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_100.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_104.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_96.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_110.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/985197_108.jpeg')], 'slice_ad_probabilities': [1.9547531648900218e-10, 6.417413822568108e-10, 3.918849689199533e-09, 3.2810796302129575e-09, 1.0648191661744022e-08, 2.0975932102373918e-09, 8.412205154684216e-09, 3.120655400756789e-10, 1.5349129744990364e-09, 3.991297514716052e-09, 5.214537246445161e-09, 3.3778151387053867e-09, 5.886703902113766e-10, 6.391662199511927e-10, 2.8861306677896437e-09, 6.230680971164304e-10, 7.214466246630025e-10, 1.8565576853646348e-09, 4.2873495864625966e-09, 1.5245695816901161e-09]}, {'patient_id': 1398870, 'true_label': 1, 'predicted_label': 0, 'ad_probability': 0.0379902683198452, 'confidence': 0.9620097316801548, 'num_slices': 20, 'slice_paths': [PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_99.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_112.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_95.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_106.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_102.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_107.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_94.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_103.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_98.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_113.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_96.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_105.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_101.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_109.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_111.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_108.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_110.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_104.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_97.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1398870_100.jpeg')], 'slice_ad_probabilities': [0.0166604146361351, 0.031501106917858124, 0.0662093460559845, 0.021816585212945938, 0.07427843660116196, 0.014238767325878143, 0.05305258929729462, 0.06520486623048782, 0.015978025272488594, 0.03478475287556648, 0.015937844291329384, 0.11602501571178436, 0.01119011826813221, 0.019937735050916672, 0.037879932671785355, 0.03554195538163185, 0.03470022231340408, 0.07321184873580933, 0.012138566933572292, 0.009517287835478783]}, {'patient_id': 1240482, 'true_label': 1, 'predicted_label': 0, 'ad_probability': 0.043696947395801544, 'confidence': 0.9563030526041985, 'num_slices': 20, 'slice_paths': [PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_100.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_104.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_95.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_110.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_99.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_108.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_111.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_98.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_109.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_101.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_105.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_94.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_113.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_103.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_107.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_96.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_102.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_106.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_97.jpeg'), PosixPath('/home/groups/comp3710/ADNI/AD_NC/test/AD/1240482_112.jpeg')], 'slice_ad_probabilities': [0.011429841630160809, 0.11584170907735825, 0.06268121302127838, 0.03584032133221626, 0.017072072252631187, 0.06889084726572037, 0.047795169055461884, 0.027110498398542404, 0.027167558670043945, 0.013890350237488747, 0.09577812254428864, 0.05859369784593582, 0.07580076903104782, 0.049194104969501495, 0.0287130419164896, 0.011357254348695278, 0.029553592205047607, 0.04155880585312843, 0.014720444567501545, 0.04094945639371872]}]

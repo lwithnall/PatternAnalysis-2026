@@ -1,12 +1,6 @@
-
 from pathlib import Path
 import time
 import numpy as np
-
-import matplotlib
-matplotlib.use("Agg")
-
-import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -32,6 +26,7 @@ from dataset import (
 
 from models import ADNICNN, ADNI_ConvNeXt
 from transforms import MRINormalise
+from plotting import generate_evaluation_plots
 
 
 #################
@@ -275,9 +270,112 @@ def calculate_computational_metrics(
     }
 
 
+
+#######################
+# FINDING ERROR CASES
+#######################
+
+
+def identify_error_cases(
+    patient_probabilities: dict,
+    patient_labels: dict,
+    dataset: ADNIDataset,
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_prob: np.ndarray,
+    n_cases: int = 3,
+):
+    """
+    Identify the n most confidently misclassified patients.
+
+    Returns patient-level error information and the paths to their
+    corresponding MRI slices.
+    """
+
+    # Confidence in the predicted class
+    confidence = np.where(y_pred == AD_LABEL, y_prob, 1 - y_prob)
+
+    # Find incorrectly classified patients
+    incorrect_indices = np.where(y_true != y_pred)[0]
+
+    if len(incorrect_indices) == 0:
+        return []
+
+    # Rank errors by confidence, highest first
+    ranked_indices = incorrect_indices[np.argsort(confidence[incorrect_indices])[::-1]]
+
+    # Patient IDs must follow the same order as aggregate_patient_predictions
+    patient_ids = list(patient_probabilities.keys())
+
+    error_cases = []
+
+    for index in ranked_indices[:n_cases]:
+        patient_id = patient_ids[index]
+
+        # Find all MRI slices belonging to this patient
+        patient_entries = [
+            entry for entry in dataset.entries
+            if entry.patient_id == patient_id
+        ]
+
+        error_cases.append({
+            "patient_id": patient_id,
+            "true_label": int(y_true[index]),
+            "predicted_label": int(y_pred[index]),
+            "ad_probability": float(y_prob[index]),
+            "confidence": float(confidence[index]),
+            "num_slices": len(patient_probabilities[patient_id]),
+            "slice_paths": [
+                entry.img_path for entry in patient_entries
+            ],
+            "slice_ad_probabilities": [
+                float(probability[AD_LABEL])
+                for probability in patient_probabilities[patient_id]
+            ],
+        })
+
+    return error_cases
+
+def print_error_cases(error_cases: list):
+    """
+    Print details of selected misclassified patients.
+    """
+
+    print("\n" + "=" * 60)
+    print("SELECTED ERROR CASES")
+    print("=" * 60)
+
+    if not error_cases:
+        print("No misclassified patients.")
+        return
+
+    for i, case in enumerate(error_cases, start=1):
+        true_class = CLASS_NAMES[case["true_label"]]
+        predicted_class = CLASS_NAMES[case["predicted_label"]]
+
+        print(f"\nError case {i}")
+        print(f"Patient ID:          {case['patient_id']}")
+        print(f"True diagnosis:      {true_class}")
+        print(f"Predicted diagnosis: {predicted_class}")
+        print(f"AD probability:      {case['ad_probability']:.4f}")
+        print(f"Prediction confidence: {case['confidence']:.2%}")
+        print(f"Number of slices:    {case['num_slices']}")
+
+        slice_probs = case["slice_ad_probabilities"]
+
+        print(f"Mean slice AD probability: {np.mean(slice_probs):.4f}")
+        print(f"Min slice AD probability:  {np.min(slice_probs):.4f}")
+        print(f"Max slice AD probability:  {np.max(slice_probs):.4f}")
+
+        print("MRI slice paths:")
+        for path in case["slice_paths"]:
+            print(f"  {path}")
+
+
 ##########
 # OUTPUT
 ##########
+
 
 def print_evaluation_results(
     model_name: str,
@@ -377,16 +475,74 @@ def evaluate_model(
     device: torch.device,
     model_name: str,
 ):
-    # Run inference on individual MRI slices.
+    """
+    Run model evaluation, calculate metrics and generate evaluation plots.
+    """
+
+    # Inferencing individual MRI slices (yay)
     patient_probabilities, patient_labels, total_slices, runtime = (
         run_inference(model, dataset, dataloader, device)
     )
 
-    # Aggregate slice predictions into patient-level predictions.
+    # Aggregating predictions into patient-level classifications
     y_true, y_pred, y_prob = aggregate_patient_predictions(
         patient_probabilities,
         patient_labels,
     )
+
+    # Classification metrics
+    classification_metrics = calculate_classification_metrics(
+        y_true,
+        y_pred,
+        y_prob,
+    )
+
+    # Confidence metrics.
+    confidence_metrics = calculate_confidence_metrics(
+        y_true,
+        y_pred,
+        y_prob,
+    )
+
+    # Computational metrics.
+    computational_metrics = calculate_computational_metrics(
+        model,
+        runtime,
+        total_slices,
+        device,
+    )
+
+    # Evaluation results
+    print_evaluation_results(
+        model_name,
+        y_true,
+        total_slices,
+        classification_metrics,
+        confidence_metrics,
+        computational_metrics,
+    )
+
+    # Plotting
+    generate_evaluation_plots(
+        y_true,
+        y_pred,
+        y_prob,
+        classification_metrics,
+        OUTPUT_DIR / model_name.lower(),
+    )
+
+    error_cases = identify_error_cases(
+        patient_probabilities,
+        patient_labels,
+        dataset,
+        y_true,
+        y_pred,
+        y_prob,
+        n_cases=3,
+    )
+
+    print_error_cases(error_cases)
+    return error_cases
 
 
 if __name__ == "__main__":
@@ -429,7 +585,7 @@ if __name__ == "__main__":
     )
 
     print("Evaluating ConvNeXt...")
-    convnext_results = evaluate_model(
+    convnext_error_cases = evaluate_model(
         convnext_model,
         test_ds,
         test_loader,
@@ -456,7 +612,7 @@ if __name__ == "__main__":
     )
 
     print("Evaluating CNN...")
-    cnn_results = evaluate_model(
+    cnn_error_cases =evaluate_model(
         cnn_model,
         test_ds,
         test_loader,
