@@ -42,6 +42,7 @@ class ADNIDataset(Dataset):
         entry = self.entries[idx]
 
         with Image.open(entry.img_path) as image:
+            # Convert to grayscale image (1 channel) in PyTorch usable format
             image = image.convert("L")
             image_tensor = (
                 torch.from_numpy(

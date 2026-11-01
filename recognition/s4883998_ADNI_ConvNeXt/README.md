@@ -1,17 +1,42 @@
+![Python](https://img.shields.io/badge/Python-3.12%2B-blue)
+![Black](https://img.shields.io/badge/Code%20Style-Black-000000)
 
 # Pattern Analysis Assignment - ADNI ConvNeXt Model
 
-## Algorithm Details
-<u>Problem Statement</u>
+## Model Details
+<u>Problem Statement</u></br>
+Alzheimer’s disease (AD) is a type of dementia that irreversibly impacts the memory, thinking, and behaviour of those diagnosed with it [1]. Biomarkers include hippocampal and cortical atrophy with ventricular enlargement. Automated triage systems help clinicians screen for and identify these biomarkers, reducing cognitive load and speeding up patient assessments. It is vital, however, for such systems to avoid false negative classifications, since inaccurate diagnoses may delay diagnosis and appropriate clinical intervention. This report aims to construct a ConvNeXt network to classify MRI images into their respective diagnostic categories, with particular emphasis on AD sensitivity. ConvNeXt is a modernised convolutional neural network (CNN) that incorporates design principles from Transformer architectures. It offers computational efficiency, strong performance on image-classification benchmarks, and a scalable architecture [4].
 
+<u>The Model</u> </br>
+Individual MRI slices were obtained from the Alzheimer's Disease Neuroimaging Initiative (ADNI) [3] and separated into training, validation, and test partitions. Patient-level separation was enforced between all three partitions to prevent data leakage. The ConvNeXt model processes each image through a series of convolutional stages, progressively extracting increasingly complex visual features [4] (see architecture diagrams below). Within each ConvNeXt block, a 7×7 depthwise convolution captures spatial features, while subsequent 1×1 linear layers mix information across channels. The extracted features are then passed to a classification head, which produces a probability for each diagnostic category (AD or CN).
 
-<u>The ConvNeXt Algorithm</u>
+ConvNeXt Architecture: </br>
+<img src="images/ConvNeXt-Architecture/ConvNeXt-Structure.jpeg"
+     alt="ConvNeXt Overall Architecture"
+     width="400">
 
+ConvNeXt Block: </br>
+<img src="images/ConvNeXt-Architecture/ConvNeXt-Block-Structure.jpeg"
+     alt="ConvNeXt Block Structure"
+     width="400">
 
-## Feasability Review
+Down Sample Block: </br>
+<img src="images/ConvNeXt-Architecture/ConvNeXt-Downsampling-Structure.jpeg"
+     alt="ConvNeXt Down Sampling Block"
+     width="400">
+
+<u>References</u></br>
+* [1] Alzheimer's Association, “What Is Alzheimer's Disease?” Available: https://www.alz.org/alzheimers-dementia/what-is-alzheimers.
+* [2] GeeksforGeeks, “ConvNeXt,” 2025. Available: https://www.geeksforgeeks.org/computer-vision/convnext/.
+* [3] Alzheimer's Disease Neuroimaging Initiative (ADNI), “ADNI Documentation.” Available: https://adni.loni.usc.edu/help-faqs/adni-documentation/.
+* [4] Z. Liu, H. Mao, C.-Y. Wu, C. Feichtenhofer, T. Darrell, and S. Xie, “A ConvNet for the 2020s,” in Proc. CVPR, 2022, pp. 11976–11986.
+
+NOTE: Images come from [2]
+
+## Feasibility Review
 **1. User Need, Scope & Acceptance Criteria** </br>
 This model aims to be an automated triage application for clinicians. The prototype should be able to classify patient brain MRI slices as having Alzheimer’s Disease (AD) or being Cognitively Normal (CN).
-Acceptance criteria; these are tested on held-out test / validation recordings:
+Acceptance criteria; these are tested on held-out test recordings:
 -	Test accuracy ≥ 80% (project minimum) 
 -	High confidence predictions (≥90%) should have an error rate ≤ 5%
 -	Peak GPU VRAM usage shouldn’t go above 8GB
@@ -64,49 +89,7 @@ Current model implementations reside within the 8GB VRAM requirement. The projec
 ## Dependencies
 Ripped from requirements.txt. Dependency list generated using the `pip freeze` command.
 ```
-asttokens==3.0.2
-cloudpickle==3.1.2
-colorama==0.4.6
-comm==0.2.3
-contourpy==1.4.0
-cycler==0.12.1
-debugpy==1.8.22
-executing==2.3.0
-fonttools==4.67.0
-ipykernel==7.4.0
-ipython==9.17.1
-ipython_pygments_lexers==1.1.1
-jedi==0.20.1
-joblib==1.6.0
-jupyter_client==8.10.0
-jupyter_core==5.9.1
-kiwisolver==1.5.1
-matplotlib==3.11.2
-matplotlib-inline==0.2.2
-narwhals==2.27.1
-nest-asyncio2==1.7.4
-nibabel==5.4.2
-numpy==2.5.4
-packaging==26.3
-parso==0.8.7
-pillow==13.0.0
-platformdirs==4.13.5
-prompt_toolkit==3.0.53
-psutil==7.2.2
-pure_eval==0.2.4
-Pygments==2.21.0
-pyparsing==3.3.3
-python-dateutil==2.9.0.post0
-pyzmq==27.2.0
-scikit-learn==1.9.1
-scipy==1.18.1
-six==1.17.0
-stack-data==0.6.3
-threadpoolctl==3.7.0
-tornado==6.5.10
-traitlets==5.16.1
-typing_extensions==4.16.0
-wcwidth==0.9.3
+NOTE TO SELF: REFILL THIS (pretty please)
 ```
 
 ## Result Reproducability
@@ -116,8 +99,14 @@ wcwidth==0.9.3
 [Example inputs / outputs] -> include diagrams
 
 ## Preprocessing
-[Preprocessing specifics w/ references]
-[Justify training / validation / testing splits of data -> patient partitioning, val_split param, random_state]
+MRI images were provided as `.jpeg` files in the designated ADNI data directory (`/home/groups/comp3710/ADNI/AD_NC`). An initial audit was performed over the dataset (refer to the Feasibility Review section), confirming no patient overlap between the original training and test partitions, and no conflicting diagnoses for individual patients. Each patient had 20 associated MRI slices, with no unusable datapoints identified (e.g. blank images or corrupted files). Images were loaded as PIL objects using Python's Pillow library and converted to grayscale, ensuring a single-channel representation. They were subsequently converted to `float32` PyTorch tensors (see the `ADNIDataset` class in `dataset.py`), with pixel values scaled to the range [0, 1]. Original image dimensions of 240 × 258 pixels were retained, with no resizing applied.
+
+A patient-level split was performed on the original training partition, with a proportion of patients reserved for validation. This prevents data leakage, since MRI images belonging to the same patient may share similar anatomical and biomarker characteristics. Stratification was used to maintain approximately equivalent AD-to-NC patient ratios between the training and validation partitions. The original test partition was kept separate and reserved for final model evaluation. A fixed random state was supplied to ensure reproducibility.
+
+Additional transformations were applied separately to the training and evaluation datasets. These included:
+* Intensity normalisation: Normalisation of non-background pixels.
+* Colour jittering: Random adjustments to image brightness and contrast (training only).
+* Random affine transformations: Random geometric transformations, such as rotation and translation (training only).
 
 ## Open Research Dilemma Investigation
 
@@ -125,17 +114,17 @@ wcwidth==0.9.3
 <u>**Entry 1**</u></br>
 **Model:** ChatGPT </br>
 **Task:** Asked it to generate the `def print_split_stats(stats: dict)` function in `audit.py` </br>
-**Other:**</br>
+**Notes:**</br>
 Helped make a function to print `split_stats` object to terminal. Verified by checking to make sure print statements were related to correct object parameters. Why use it? Figured it would make something look neat quickly. Tested by just running the `audit.py` file and checking the terminal output. Showed what I needed therefore W's. 
 
 <u>**Entry 2**</u></br>
 **Model:** ChatGPT </br>
 **Task:** Asked it to convert my Validation Results table from word into a markdown-compatible format (table in feasability report section).</br>
-**Other:**</br>
+**Notes:**</br>
 I gave it an unfinished table (I had written the first two rows myself), then got bored and asked GPT to format the rest for me. Validation was easy since 1. I just need to visually check the ouptut to ensure correctness, and 2. it's just finishing off the work I'd already done. 
 
 <u>**Entry 3**</u></br>
 **Model:** ChatGPT </br>
 **Task:** Exact same as entry 2 except with the appendix tables for feasability review.</br>
-**Other:**</br>
+**Notes:**</br>
 See enty 2. Although I just threw the data at it this time. I didn't start the tables at all. Verfieid output visually. 
