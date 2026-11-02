@@ -10,7 +10,6 @@ from torchvision.transforms import v2
 from dataset import (
     DATA_DIR,
     generate_datasets,
-    ADNIDataset,
     NC_LABEL,
     AD_LABEL,
 )
@@ -31,9 +30,9 @@ OUTPUT_DIR = MODEL_DIR / "evaluation"
 CLASS_NAMES = ["NC", "AD"]
 
 
-#################
-# CONFIGURATION
-#################
+####################
+# LOADING / CONFIG
+####################
 
 def load_model(model: nn.Module, path: Path, device: torch.device) -> nn.Module:
     """Load and return model saved at path in evaluation mode"""
@@ -50,6 +49,68 @@ def load_model(model: nn.Module, path: Path, device: torch.device) -> nn.Module:
     return model
 
 
+#############################
+# GETTING MODEL PREDICTIONS
+#############################
+
+def run_model_test(
+    model: nn.Module,
+    dataloader: DataLoader,
+    device: torch.device 
+):
+    """Run given model on test data to output predictions w/ probabilities"""
+
+    model.eval()
+
+    slice_probabilities = [] # Classification probabilities
+    slice_labels = [] # Predicted label
+
+    if device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats(device)
+        torch.cuda.synchronize(device)
+
+    start_time = time.perf_counter() # Time taken to run inference code
+
+    with torch.inference_mode():
+        for X, y in dataloader:
+            X = X.to(device)
+
+            # Predictions for slice X
+            logits = model(X)
+            probabilties = torch.softmax(logits, dim=1).cpu()
+
+            slice_probabilities.extend(probabilties.tolist())
+            slice_labels.extend(y.cpu().tolist())
+
+    if device.type == "cuda":
+        torch.cuda.synchronize(device)
+
+    runtime = time.perf_counter() - start_time
+    return slice_probabilities, slice_labels, runtime
+
+
+def get_predictions(
+    slice_probabilities: list,
+    slice_labels: list,
+):
+    """
+    Convert slice probabilities and true labels into arrays
+    for classification metrics
+
+    y_true: True labels (NC = 0, AD = 1)
+    y_pred: Predicted labels (NC = 0, AD = 1)
+    y_ad_prob: Predicted probability of AD
+    """
+
+    probabilities = np.array(slice_probabilities)
+
+    y_true = np.array(slice_labels)
+    y_pred = probabilities.argmax(axis=1)
+    y_ad_prob = probabilities[:, AD_LABEL]
+
+    return y_true, y_pred, y_ad_prob
+
+
 ##########
 # OUTPUT
 ##########
@@ -57,8 +118,8 @@ def load_model(model: nn.Module, path: Path, device: torch.device) -> nn.Module:
 
 def print_evaluation_results(
     model_name: str,
-    y_true: np.ndarray,
     total_slices: int,
+    confidence_threshold: float,
     classification_metrics: dict,
     confidence_metrics: dict,
     computational_metrics: dict,
@@ -73,7 +134,6 @@ def print_evaluation_results(
     print(f" EVALUATION RESULTS: {model_name}")
     print(f"{'=' * 60}")
 
-    print(f"Patients evaluated: {len(y_true)}")
     print(f"MRI slices evaluated: {total_slices}")
 
     # Classification metrics
@@ -114,7 +174,7 @@ def print_evaluation_results(
     print("CONFIDENCE METRICS")
     print(f"{'-' * 60}")
 
-    print(f"Confidence threshold:      {CONFIDENCE_THRESHOLD:.0%}")
+    print(f"Confidence threshold:      {confidence_threshold:.0%}")
     print(f"Coverage:                  {confidence_metrics['coverage']:.2%}")
     print(
         f"High-confidence accuracy: "
@@ -141,83 +201,119 @@ def print_evaluation_results(
     print(f"\n{'=' * 60}\n")
 
 
-############################
-# LINK EVERYTHING TOGETHER
-############################
+def print_failure_cases(failure_cases, model_name):
 
-def run_model_test(
-    model: nn.Module,
-    dataloader: DataLoader,
-    device: torch.device 
-):
-    """Run given model on test data to output predictions w/ probabilities"""
+    print(f"\n{'=' * 60}")
+    print(f" FAILURE CASES: {model_name}")
+    print(f"{'=' * 60}")
 
-    model.eval()
+    for key, title in [
+        ("false_positives", "FALSE POSITIVES"),
+        ("false_negatives", "FALSE NEGATIVES"),
+    ]:
 
-    slice_probabilities = [] # Classification probabilities
-    slice_labels = [] # Predicted label
-    total_slices = 0
+        cases = failure_cases[key]
 
-    if device.type == "cuda":
-        torch.cuda.reset_peak_memory_stats(device)
-        torch.cuda.synchronize(device)
+        print(f"\n{title} ({len(cases)} shown)")
+        print("-" * 60)
 
-    start_time = time.perf_counter() # Time taken to run inference code
+        if not cases:
+            print("No cases found.")
+            continue
 
-    with torch.inference_mode():
-        for X, y in dataloader:
-            X = X.to(device)
+        for i, case in enumerate(cases, 1):
 
-            # Predictions for slice X
-            logits = model(X)
-            probabilties = torch.softmax(logits, dim=1).cpu()
+            print(f"\nCase {i}")
+            print(f"  Patient ID:       {case['patient_id']}")
+            print(f"  Image:            {case['path'].name}")
+            print(f"  True label:       {CLASS_NAMES[case['true_label']]}")
+            print(f"  Predicted label:  {CLASS_NAMES[case['predicted_label']]}")
+            print(f"  AD probability:   {case['ad_probability']:.4f}")
+            print(f"  Error confidence: {case['error_confidence']:.4f}")
 
-            slice_probabilities.extend(probabilties.tolist())
-            slice_labels.extend(y.cpu().tolist())
-
-            total_slices += len(y)
-
-    if device.type == "cuda":
-        torch.cuda.synchronize(device)
-
-    runtime = time.perf_counter() - start_time
-    return slice_probabilities, slice_labels, total_slices, runtime
+    print(f"\n{'=' * 60}\n")
 
 
-def get_predictions(
-    slice_probabilities: list,
-    slice_labels: list,
+#########################
+# FAILURE CASE HANDLING
+#########################
+
+
+def find_failure_cases(
+    dataset,
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_ad_prob: np.ndarray,
+    top_n: int = 5
 ):
     """
-    Convert slice probabilities and true labels into arrays
-    for classification metrics
+    Identify the most confident false positives and false negatives.
 
-    y_true: True labels (NC = 0, AD = 1)
-    y_pred: Predicted labels (NC = 0, AD = 1)
-    y_ad_prob: Predicted probability of AD
+    Returns the top_n samples of each type.
     """
 
-    probabilities = np.array(slice_probabilities)
+    entries = dataset.entries
 
-    y_true = np.array(slice_labels)
-    y_pred = probabilities.argmax(axis=1)
-    y_ad_prob = probabilities[:, AD_LABEL]
+    # Incorrect predictions
+    fp_indices = np.where((y_true == NC_LABEL) & (y_pred == AD_LABEL))[0]
+    fn_indices = np.where((y_true == AD_LABEL) & (y_pred == NC_LABEL))[0]
 
-    return y_true, y_pred, y_ad_prob
+    # Sort by confidence
+    fp_indices = sorted(
+        fp_indices,
+        key=lambda i: y_ad_prob[i],
+        reverse=True,
+    )
+
+    fn_indices = sorted(
+        fn_indices,
+        key=lambda i: y_ad_prob[i],
+    )
+
+    def extract_cases(indices):
+        cases = []
+
+        for i in indices[:top_n]:
+            entry = entries[i]
+
+            cases.append({
+                "path": entry.img_path,
+                "patient_id": entry.patient_id,
+                "true_label": y_true[i],
+                "predicted_label": y_pred[i],
+                "ad_probability": y_ad_prob[i],
+                "error_confidence": (
+                    y_ad_prob[i] if y_true[i] == NC_LABEL
+                    else 1 - y_ad_prob[i]
+                ),
+            })
+
+        return cases
+
+    return {
+        "false_positives": extract_cases(fp_indices),
+        "false_negatives": extract_cases(fn_indices),
+    }
+
+
+#########################
+# EVALUATION / MAINLOOP
+#########################
 
 
 def evaluate_model(
     model: nn.Module,
     dataloader: DataLoader,
+    confidence_threshold: float,
     device: torch.device,
     model_name: str,
 ):
     """
-    Run model evaluation, calculate metrics and generate evaluation plots.
+    Run model test, calculate metrics and generate evaluation plots.
     """
 
     # Running model on given dataloader
-    slice_probabilities, slice_labels, total_slices, runtime = run_model_test(
+    slice_probabilities, slice_labels, runtime = run_model_test(
         model, dataloader, device
     )
 
@@ -225,13 +321,15 @@ def evaluate_model(
         slice_probabilities, slice_labels
     )
 
+    total_slices = len(slice_labels)
+
     # Calculating metrics
     classification_metrics = calculate_classification_metrics(
         y_true, y_pred, y_ad_prob,
     )
 
     confidence_metrics = calculate_confidence_metrics(
-        y_true, y_pred, y_ad_prob
+        y_true, y_pred, y_ad_prob, confidence_threshold
     )
 
     computational_metrics = calculate_computational_metrics(
@@ -241,8 +339,8 @@ def evaluate_model(
     # Evaluation results
     print_evaluation_results(
         model_name,
-        y_true,
         total_slices,
+        confidence_threshold,
         classification_metrics,
         confidence_metrics,
         computational_metrics,
@@ -256,6 +354,16 @@ def evaluate_model(
         classification_metrics,
         OUTPUT_DIR / model_name.lower(),
     )
+
+    # Identify failure cases
+    failure_cases = find_failure_cases(
+        dataloader.dataset,
+        y_true,
+        y_pred,
+        y_ad_prob,
+    )
+
+    print_failure_cases(failure_cases, model_name)
 
 
 if __name__ == "__main__":
@@ -302,10 +410,10 @@ if __name__ == "__main__":
     )
 
     print("Evaluating ConvNeXt...")
-    convnext_error_cases = evaluate_model(
+    evaluate_model(
         convnext_model,
-        test_ds,
         test_loader,
+        confidence_threshold,
         device,
         "ConvNeXt",
     )
@@ -329,10 +437,10 @@ if __name__ == "__main__":
     )
 
     print("Evaluating CNN...")
-    cnn_error_cases =evaluate_model(
+    evaluate_model(
         cnn_model,
-        test_ds,
         test_loader,
+        confidence_threshold,
         device,
         "CNN",
     )
