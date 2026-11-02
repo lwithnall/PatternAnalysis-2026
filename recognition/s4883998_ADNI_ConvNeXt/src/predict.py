@@ -33,7 +33,7 @@ from utils import (
 #######################
 
 
-YAML_CONVNEXT_PATH = Path("../config/convnext.yaml")
+YAML_CONVNEXT_PATH = Path("/home/Student/s4883998/ADNI_ConvNeXt2.0/config/convnext.yaml")
 
 with open(YAML_CONVNEXT_PATH, "r") as stream:
     convnext_config = yaml.safe_load(stream)

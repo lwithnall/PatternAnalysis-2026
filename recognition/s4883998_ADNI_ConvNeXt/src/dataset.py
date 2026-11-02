@@ -14,7 +14,7 @@ from torch.utils.data import Dataset, DataLoader
 # DATA CONFIGURATIONS
 #######################
 
-YAML_DATA_PATH = Path("../config/data.yaml")
+YAML_DATA_PATH = Path("/home/Student/s4883998/ADNI_ConvNeXt2.0/config/data.yaml")
 
 with open(YAML_DATA_PATH, "r") as stream:
     data_config = yaml.safe_load(stream)

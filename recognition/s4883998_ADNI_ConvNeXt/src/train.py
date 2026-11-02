@@ -23,7 +23,7 @@ from plotting import plot_learning_curves
 #######################
 
 
-YAML_CONVNEXT_PATH = Path("../config/convnext.yaml")
+YAML_CONVNEXT_PATH = Path("/home/Student/s4883998/ADNI_ConvNeXt2.0/config/convnext.yaml")
 
 with open(YAML_CONVNEXT_PATH, "r") as stream:
     convnext_config = yaml.safe_load(stream)
@@ -370,21 +370,21 @@ if __name__ == "__main__":
 
     del convnext_model, next_optimiser
 
-    # print("Configuring CNN model...")
-    # cnn_model = ADNICNN().to(device)
-    # cnn_loss_fn = nn.CrossEntropyLoss()
-    # cnn_optimiser = torch.optim.Adam(
-    #     cnn_model.parameters(), lr=0.001
-    # )
+    print("Configuring CNN model...")
+    cnn_model = ADNICNN().to(device)
+    cnn_loss_fn = nn.CrossEntropyLoss()
+    cnn_optimiser = torch.optim.Adam(
+        cnn_model.parameters(), lr=0.001
+    )
 
-    # print("Training CNN...")
-    # train_model(
-    #     cnn_model,
-    #     train_loader,
-    #     val_loader,
-    #     cnn_loss_fn,
-    #     cnn_optimiser,
-    #     epochs,
-    #     device,
-    #     save_path = save_path_root / "cnn.pt"
-    # )
+    print("Training CNN...")
+    train_model(
+        cnn_model,
+        train_loader,
+        val_loader,
+        cnn_loss_fn,
+        cnn_optimiser,
+        EPOCHS,
+        device,
+        save_path = SAVE_PATH_ROOT / "cnn.pt"
+    )
