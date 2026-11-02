@@ -25,12 +25,6 @@ Down Sample Block: </br>
      alt="ConvNeXt Down Sampling Block"
      width="400">
 
-<u>References</u></br>
-* [1] Alzheimer's Association, “What Is Alzheimer's Disease?” Available: https://www.alz.org/alzheimers-dementia/what-is-alzheimers.
-* [2] GeeksforGeeks, “ConvNeXt,” 2025. Available: https://www.geeksforgeeks.org/computer-vision/convnext/.
-* [3] Alzheimer's Disease Neuroimaging Initiative (ADNI), “ADNI Documentation.” Available: https://adni.loni.usc.edu/help-faqs/adni-documentation/.
-* [4] Z. Liu, H. Mao, C.-Y. Wu, C. Feichtenhofer, T. Darrell, and S. Xie, “A ConvNet for the 2020s,” in Proc. CVPR, 2022, pp. 11976–11986.
-
 NOTE: Images come from [2]
 
 ## Feasibility Review
@@ -43,7 +37,7 @@ Acceptance criteria; these are tested on held-out test recordings:
 -	No overlap between train, test and validation datasets
 
 **2. Model Choice & Course Concepts** </br>
-Data is taken from the Alzheimer’s Disease Neuroimaging Initiative (ADNI) dataset. Images are 240x258 grayscale patient MRI scans, split into CN and AD classifications, with 20 slices per patient. The dataset partitions patients into training (556 NC, 520 AD) and test (227 NC, 223 AD) splits; details in Appendix 1. This project addresses the [Hard Difficulty] band of project 2.1 using a ConvNeXt model [1]. Baseline recordings will be taken using a standard CNN to establish an initial performance benchmark. Both models will begin with no pre-trained weights and draw upon class concepts such as convolution, loss quantification methods, and categorisation.
+Data is taken from the Alzheimer’s Disease Neuroimaging Initiative (ADNI) dataset. Images are 240x258 grayscale patient MRI scans, split into CN and AD classifications, with 20 slices per patient. The dataset partitions patients into training (556 NC, 520 AD) and test (227 NC, 223 AD) splits; details in Appendix 1. This project addresses the [Hard Difficulty] band of project 2.1 using a ConvNeXt model [4]. Baseline recordings will be taken using a standard CNN to establish an initial performance benchmark. Both models will begin with no pre-trained weights and draw upon class concepts such as convolution, loss quantification methods, and categorisation.
 
 **3. Preliminary Feasibility Evidence** </br>
 No patient overlap exists between partitions. NC and AD classes are balanced, being roughly 52% and 48% of the data, respectively. A patient-level, stratified portion (20%) of the training data was successfully taken as a validation set; details in Appendix 2. A 4-block CNN and torchivision’s ConvNext-tiny model were trained and tested on the validation set as a ‘smoke-test’.
@@ -66,9 +60,6 @@ The CNN implementation used around 2GB of VRAM with 0.39M parameters; epochs too
 Head shape and age variation could make it harder to extract anatomical biomarkers, leading to several ambiguous test cases. This is concerning given the high confidence on validation set errors. Confidence calibration and referral of uncertain cases for human review will be investigated.
 Current model implementations reside within the 8GB VRAM requirement. The project will attempt to operate within 3 hours of A100 GPU usage time. A fallback in case of ConvNeXt failure will be further exploration of baseline and similar models.
 
-**References** </br>
-[1]	Z. Liu, H. Mao, C.-Y. Wu, C. Feichtenhofer, T. Darrell, and S. Xie, “A ConvNet for the 2020s,” in Proc. CVPR, 2022, pp. 11976–11986.
-
 <b>Appendix 1 – Data Overview (Before Validation Split)</b>
 <table>
 <tr><th>Split</th><th colspan="2">Patients</th><th colspan="2">Slices</th><th colspan="3">Slices per Patient</th></tr>
@@ -90,6 +81,8 @@ Current model implementations reside within the 8GB VRAM requirement. The projec
 Ripped from requirements.txt. Dependency list generated using the `pip freeze` command.
 ```
 asttokens==3.0.2
+black==26.10.1
+click==8.5.0
 cloudpickle==3.1.2
 colorama==0.4.6
 comm==0.2.3
@@ -113,6 +106,7 @@ MarkupSafe==3.0.4
 matplotlib==3.11.2
 matplotlib-inline==0.2.2
 mpmath==1.3.0
+mypy_extensions==1.1.0
 narwhals==2.27.1
 nest-asyncio2==1.7.4
 networkx==3.7
@@ -120,6 +114,7 @@ nibabel==5.4.2
 numpy==2.5.4
 packaging==26.3
 parso==0.8.7
+pathspec==1.1.1
 pillow==13.0.0
 platformdirs==4.13.5
 prompt_toolkit==3.0.53
@@ -128,6 +123,8 @@ pure_eval==0.2.4
 Pygments==2.21.0
 pyparsing==3.3.3
 python-dateutil==2.9.0.post0
+pytokens==0.4.1
+PyYAML==6.0.3
 pyzmq==27.2.0
 scikit-learn==1.9.1
 scipy==1.18.1
@@ -144,9 +141,7 @@ wcwidth==0.9.3
 ```
 
 ## Result Reproducability
-To reproduce experiemnts, the same datasets, directory structure, dependency versions, model configurations, and random state must be used. A `random_state` variable is taken as an argument in dataset generation functions for this. However, GPU hardware and software configurations may affect numerical results, so exact reproducability across environments is not guaranteed [1]. 
-
-* [1] O. E. Gundersen, S. Shamsaliei, and R. J. Isdahl, “Do machine learning platforms provide out-of-the-box reproducibility?,” Future Generation Computer Systems, vol. 126, pp. 34–47, Jan. 2022. https://doi.org/10.1016/j.future.2021.06.014.
+To reproduce experiemnts, the same datasets, directory structure, dependency versions, model configurations, and random state must be used. A `random_state` variable is taken as an argument in dataset generation functions for this. However, GPU hardware and software configurations may affect numerical results, so exact reproducability across environments is not guaranteed [5]. 
 
 ## Input, Output and Plot Examples
 The model accepts individual grayscale MRI slices from the ADNI dataset as input. Images are preprocess before being passed to the model (see Preprocessing). The model produces a binary classification indicating whether the image corresponds to an Alzheimer's Disease (AD) or Cognitively Normal (NC) patient. Images are 240x258 pixels in size and converted to float32 tensors before processing. </br>
@@ -170,7 +165,7 @@ Epoch [5/20] | Train loss: 0.6583 | Train acc: 60.52% | Val loss: 0.5989 | Val a
 After the designated number of Epochs have finished (20 in this case), the results are compiled into a graph. </br>
 
 Example ConvNeXt Training Output Image: </br>
-<img src="images/TrainingResults/ConvNeXt_Training_plot.png"
+<img src="images/cnn_plots/learning_curves.png"
      alt="ConvNeXt Training Data"
      width="800">
 
@@ -250,14 +245,206 @@ Additional transformations were applied separately to the training and evaluatio
 * Random affine transformations: Random geometric transformations, such as rotation and translation (training only).
 
 ## Open Research Dilemma Investigation
-<u>Research Dilemma</u> </br>
-This investigation aims to evaluate whether increased architectural complexity provides meaningful improvmenet in the classification of Alzheimer's disease against ADNI MRI images. Model complexity is often thought to correspond to representational capacity, and consequently, improved classification performance. ConvNeXt and CNN models will be trained and tested on the aforementioned ADNI dataset to attempt to ascertain whether the complexity to accuracy debate has any merit. Both models produced slice-level predictions, which were aggregated into patient-level predictions by averaging the predicted AD probabilities across each patient's slices. 
+### Research Dilemma </br>
+This investigation aims to evaluate whether increased architectural complexity provides meaningful improvmenet in the classification of Alzheimer's disease against ADNI MRI images. Model complexity is often thought to correspond to representational capacity, and consequently, improved classification performance. ConvNeXt and CNN models will be trained and tested on the aforementioned ADNI dataset to attempt to ascertain whether the complexity to accuracy debate has any merit. Both models produced slice-level predictions, with each MRI slice treated as an individual classification sample. All reported evaluation metrics were calculated at the slice level; patient-level aggregation was not performed. 
+
+The CNN consists of three convolutional blocks followed by a global average pooling and subsequent classification layers. ConvNeXt uses the aforementioned ConvNeXt blocks to progressively increment channel dimensions. Both models were trained from scratch using cross-entropy loss.
 </br>
 
-<u>A Brief Look at Parameter Evolution</u> </br>
-Model parameters in use were found by testing how changes impacted test results. Prior to the use of the `RandomAffine` and `ColorJitter` image transforms, the ConvNeXt model would heavily overfit to the training data, often reaching training accuracies of around 78% with validation accuracies of around 40%. Implementing these made the accuracies implement together, so they were about the same. A typical ConvNeXt model consists of 4 sequential 'ConvNeXt blocks' (convolution / activaiton function layers used for feature extraction), however limiting the model to 3 layers caused an evaluation accuracy increase of around 5%. The ConvNeXt model is limited to 15 epoch iterations, as testing showed that further training had no meaningful impact on validation results. Decreasing ConvNeXt block depths from (3, 3, 9, 3) to (2, 2, 4, 2), and channel dimensions from (96, 192, 384, 768) to (48, 96, 192, 384) also contributed.
+### A Brief Look at ConvNeXt Parameter Evolution </br>
+Model parameters were found through iterative experimentation; the progression of which is summarised below. Before using the `RandomAffine` and `ColorJitter` image transforms, the ConvNeXt model heavily overfit the training data, often reaching training accuracies around 78% with validation accuracies around 40%. Implementing these made the accuracies align. ConvNeXt models with 3 and 4 sequential ‘ConvNeXt blocks’ had no meaningful difference. The same holds for decreasing ConvNeXt block depths from (3, 3, 9, 3) to (2, 2, 4, 2) and channel dimensions from (96, 192, 384, 768) to (48, 96, 192, 384). Consequently, the ‘larger’ configurations were used to provide greater model capacity. Increasing weight decay from 0.1 to 0.3 did not affect results but significantly increased training time. Training was limited to 15 epochs, as experiments indicated that additional epochs generally provided negligible improvements or degraded validation performance. The final configuration was selected based on validation performance and training efficiency. The following parameters were used (excerpt from config/convnext.yaml):
+```yaml
+# Model settings
+drop-path-rate: 0.5
+layer-scale-init-val: 0.000001
+depths: [3, 3, 9, 3]
+dims: [96, 192, 384, 768]
 
-<u>Quantitative Benchmarking</u> </br>
+learning-rate: 0.0001
+weight-decay: 0.1
+confidence-threshold: 0.9
+
+# Image transform configuration
+random-affine:
+  degrees: 5
+  translate: [0.03, 0.03]
+  scale: [0.97, 1.03] 
+  fill: 0
+
+colour-jitter:
+  brightness: 0.1
+  contrast: 0.1
+```
+
+### Quantitative Benchmarking </br>
+The primary research question investigated was how a custom ConvNeXt architecture compes to a baseline CNN model in the classification of ADNI MRI scans. Both models were trained on the same training and validation splits, then evaluated against the provided test set. 
+
+### Validation Performance </br>
+20% of the supplied training data was used as a hold-out validation set. ConvNeXt performed better in all reported metrics, suggesting that a more complex architecture helps distinguish between classifications. ConvNeXt's final epochs achieved the highest validation accuracy (80.76%), while the CNN hit a maximum of (77.55%). Metrics are seen in the table below:
+
+<table>
+    <thead>
+        <tr><th>Validation metric</th><th>ConvNeXt</th><th>CNN</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Accuracy</td><td><strong>80.76%</strong></td><td>77.55%</td></tr>
+        <tr><td>Macro-F1</td><td><strong>0.8076</strong></td><td>0.7755</td></tr>
+        <tr><td>AUROC</td><td><strong>0.8706</strong></td><td>0.8608</td></tr>
+        <tr><td>NC precision</td><td><strong>0.8455</strong></td><td>0.8095</td></tr>
+        <tr><td>AD precision</td><td><strong>0.7738</strong></td><td>0.7447</td></tr>
+        <tr><td>NC recall</td><td><strong>0.7696</strong></td><td>0.7415</td></tr>
+        <tr><td>AD recall</td><td><strong>0.8486</strong></td><td>0.8120</td></tr>
+    </tbody>
+</table>
+
+### Test Performance </br>
+However, the validation results didn't translate into test performance.
+
+<table>
+    <thead>
+        <tr><th>Test metric</th><th>ConvNeXt</th><th>CNN</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Accuracy</td><td>68.59%</td><td><strong>72.12%</strong></td></tr>
+        <tr><td>Macro-F1</td><td>0.6856</td><td><strong>0.7205</strong></td></tr>
+        <tr><td>AUROC</td><td>0.7535</td><td><strong>0.7982</strong></td></tr>
+        <tr><td>Average precision</td><td>0.7361</td><td><strong>0.8015</strong></td></tr>
+        <tr><td>NC precision</td><td>0.6812</td><td><strong>0.7069</strong></td></tr>
+        <tr><td>AD precision</td><td>0.6911</td><td><strong>0.7385</strong></td></tr>
+        <tr><td>NC recall</td><td>0.7093</td><td><strong>0.7643</strong></td></tr>
+        <tr><td>AD recall</td><td>0.6621</td><td><strong>0.6774</strong></td></tr>
+    </tbody>
+</table>
+
+Despite a 3.1 percentage-point increase in validation accuracy, the ConvNeXt architecture scored 4 percentage-points below the CNN in test samples; failing to meet the aforementioned 80% cut-off. The CNN also scored higher in all calculated metrics.
+
+### Confusion Matrix Analysis </br>
+
+The constructed confusion matrices provide insight into exactly where errors occured for each slice classification.
+
+CNN Confusion Matrix: </br>
+<img src="images/evaluation/cnn/confusion_matrix.png"
+     alt="CNN Confusion Matrix"
+     width="800">
+
+ConvNeXt Confusion Matrix: </br>
+<img src="images/evaluation/convnext/confusion_matrix.png"
+     alt="ConvNeXt Confusion Matrix"
+     width="800">
+
+Both models had similar success in AD classifications. However, the CNN had a 6% improvement over the ConvNeXt network for NC predictions. Due to the intended clinical applications of these models, it was hoped to minimise the false negatives rates of all models. Unfortunately, the CNN had a rate of 32.26%, while the ConvNeXt had a rate of 33.79%. This poses a significant limitation for clinical applications and will be further assessed.
+
+### Confidence Analysis
+
+Both models were evaluated using a 90% confidence threshold. In other words, if the the softmax probability for a classification was over 0.9, the prediction was considered 'high-confidence'.
+
+<table>
+    <thead>
+        <tr><th>Confidence metric</th><th>ConvNeXt</th><th>CNN</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Confidence threshold</td><td>90%</td><td>90%</td></tr>
+        <tr><td>Coverage</td><td>21.02%</td><td>19.39%</td></tr>
+        <tr><td>Accuracy on accepted predictions</td><td>83.19%</td><td><strong>90.14%</strong></td></tr>
+    </tbody>
+</table>
+
+Only around one fifth of the predictions made by either model were considered 'high-confidence'. However, when this was the case the ConvNeXt and CNN models were correct 83.19% and 90.14% of the time, respectively. This violates the feasibility review's criterion that 'high-confidence' predictions must have an error rate below 5%. Confidence should therefore be interpreted cautiously, and probability calibration would be a useful area for further investigation. Furthermore, it reveals that both models considered the majority of the data set to be 'amiguous' in classification.
+
+The below graphs demonstrate how coverage (the percent of the highest confidence recordings accepted), relates to classification accuracy. For example if we were to take the top 20% of the CNN models most confident predictions, we would have an accuracy of about 90%. This is the 90% threshold in the graph above.
+
+CNN Confidence-Coverage Graph: </br>
+<img src="images/evaluation/cnn/confidence_coverage.png"
+     alt="CNN Confidence Coverage Graph"
+     width="500">
+
+ConvNeXt Confidence-Coverage Graph: </br>
+<img src="images/evaluation/convnext/confidence_coverage.png"
+     alt="ConvNeXt Confidence Coverage Graph"
+     width="500">
+
+### Computational Resource Profiling
+
+Computational efficiency was evaluated using parameter count, GPU memory consumption, training runtime and inference performance. Both models were evaluated using the same test dataset and inference batch size of 32.
+
+<table>
+    <thead>
+        <tr><th>Resource metric</th><th>ConvNeXt</th><th>CNN</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Total parameters</td><td>27,818,594</td><td>92,930</td></tr>
+        <tr><td>Trainable parameters</td><td>27,818,594</td><td>92,930</td></tr>
+        <tr><td>Training runtime</td><td>1,885.22 s</td><td>928.79 s</td></tr>
+        <tr><td>Peak training GPU memory allocated</td><td>4,840.33 MB</td><td>840.52 MB</td></tr>
+        <tr><td>Inference runtime</td><td>22.13 s</td><td>12.99 s</td></tr>
+        <tr><td>Inference latency per slice</td><td>2.46 ms</td><td>1.44 ms</td></tr>
+        <tr><td>Inference throughput</td><td>406.75 slices/s</td><td>692.87 slices/s</td></tr>
+        <tr><td>Peak inference GPU memory allocated</td><td>574.63 MB</td><td>435.98 MB</td></tr>
+    </tbody>
+</table>
+
+The ConvNeXt architecture contains approximately 299 times as many parameters as the CNN, and took about twice as long to train. It also had an inference latency around 71% higher. Despite this, the ConvNeXt model performed worse on the held-out test set; meaning the CNN provides a more favourable balance between classification performance and computational efficiency.
+
+Both architectures remained within the feasibility report's 8 GB GPU memory acceptance criterion during training. PyTorch's peak reserved GPU memory was also recorded separately: 5,138 MB for ConvNeXt and 6,042 MB for the CNN. Reserved memory represents memory held by PyTorch's caching allocator rather than memory actively allocated to tensors, so allocated memory is used for the primary comparison.
+
+## Qualitative Error Autopsies
+A notable observation across both architectures was the concentration of highly confident errors within individual patients. For ConvNeXt, all five of the most confidently incorrect false-negative examples belonged to patient 985197. Slices will be extracted from three such patients 1214021, 985197, and 1175051, then analysed to see if any defining traits may have caused these errors.
+
+<u>CASE 1: ConvNeXt false positive</u></br>
+- *Patient ID:* 1214021
+- *Image:* `1214021_96.jpeg`
+- *Actual class:* NC
+- *Predicted class:* AD
+- *AD probability:* 91.98%
+
+<img src="images/1214021_96.jpeg"
+     alt="1214021_96"
+     width="300">
+
+Alzheimer's disease is associae with brain atrophy (loss of tissue), which can cause brain sulci to appear wider than normal [6]. Darker regions seem to appear frequently in the above region, particularly around the cortical sulci. These spaces are visually noticeable between the surroinding cortical folds. It's possible these regions caused the ConvNeXt network to interprete the darker regions as Alzheimer's induced atrophy, thus causing an incorrect AD classification. The high AD probability (91.98%) indicates the model may have overly erelied on this feature to make predictions.
+
+<u>CASE 2: ConvNeXt false negative</u></br>
+- *Patient ID:* 985197
+- *Image:* `985197_94.jpeg`
+- *Actual class:* AD
+- *Predicted class:* NC
+- *AD probability:* 0.08% 
+
+<img src="images/985197_94.jpeg"
+     alt="985197_94"
+     width="300">
+
+Unlike the rest of the dataset, this MRI image appears to be incredibly granular. The left side of the MRI also appears to be cut off, it is unclear if this is due to a cropping of the actual MRI image, poor imaging techniques, or it is just an outlier in terms of evidence. A clear disprepency in visual acuity can be seen between this case, and cases 1 and 3. As such, it is likely that the model isn't prepared for this kind of 'outlier' image, and others like it that may exists in the dataset, resulting in an incorrect classification.
+
+<u>CASE 3: CNN false negative</u></br>
+- *Patient ID** 1175051
+- *Image:* `1175051_90.jpeg`
+- *Actual class:* AD
+- *Predicted class:* NC
+- *AD probability:* 0.05%
+
+<img src="images/1175051_90.jpeg"
+     alt="1175051_90"
+     width="300">
+
+Compared with Case 1, the prominent dark spaces around cortical sulci appear less pronounced, possibly causing the NC classification. The small 0.05% AD probability also corroborates the idea of an overreliance on cortical sulci spacing in the models predictions. Additionally, the image appears to be shaded darker than previous slices, possibly influencing the models classification abilities.
+
+<u>Note</u></br>
+It is important to note that this model comes with the limitation of using slice-level evaluation, since a large number of misclassified slices may originate from a minority of the patients taken. Patient level slice aggregation should be considered in the future, or some methodology capable of it, in an attempt to rectify this issue.
+
+## Engineering Recommendations and Trade-off Synthesis
+The experiments demonstrate that the more complex ConvNeXt architecture didn't provide apractical advatnage over the simpler CNN. Although the ConvNeXt architecture had stronger training and validation resulsts, it had lower accuracy, macro-F1, AUROC, and precision in the test set. The CNN also required substantially fewer parameters, less training time and lower inference resources.
+
+Previous research has demonstrated strong performance using ConvNeXt architectures for Alzheimer's disease MRI classification, with some studies reporting accuracy approaching 90% [7]. However, these results were obtained using different datasets and experimental configurations, making direct comparisons inappropriate. Nevertheless, they demonstrate the potential of ConvNeXt architectures and motivate further investigation into their application to ADNI data.
+
+Based on this reports findings, and previous research, the following engineering recommendations are proposed:
+1. **Retain the CNN as the baseline and current preferred model** - it showed stronger test performance and substantially lower computational requirements; it can be used as stand in while ConvNeXt improvements are investigated
+2. **Investigate the validation-to-test performance discrepancy** - further examination of class distributions, patient characteristics, slice-index distributions and image intensity characteristics may reveal the reasoning behind these result discrepencies
+3. **Investigate patient-specific classification errors** - misscategorisations often occured across slices shared by patients, these patients shuold be investigated to see what biomarkers make their MRI slices 'ambiguous' in the eyes of the model
+4. **Investigate pretrained initialisation** - experimenting with pretrained models may prove beneficial in feature extraction, and has been successfully implemented in the past [7]
+5. **Improve confidence reliability** - calibration methods and validation-based confidence thresholds should be investigated before using confidence scores to determine whether predictions should be accepted or referred for further review.
+
+**Final recommendation:** Based on the current experimental evidence, the CNN is the preferred clinical application. However, neither architecture is capable of being a standalone diagnostic system; further investigation is required before clinical application. Future improvements should prioritise reliable AD detection, and trustworthy confidence estimates rather than simply increasing model complexity. It is likely this implementation of the ConvNeXt model is flawed, as similar projects have achieved much higher acceptance rates.
 
 
 ## AI Intelligence Usage Disclosure
@@ -284,3 +471,12 @@ See enty 2. Although I just threw the data at it this time. I didn't start the t
 **Task:** Asked it to generate the `print_evaluation_results` function in `predict.py`.</br>
 **Notes:**</br>
 Basic printing function that takes a result dict and prints it (neatly-ish) to the terminal. Verified by looking at the output / checking that the parameters were printed in the right order / way.
+
+## References
+* [1] Alzheimer's Association, “What Is Alzheimer's Disease?” Available: https://www.alz.org/alzheimers-dementia/what-is-alzheimers.
+* [2] GeeksforGeeks, “ConvNeXt,” 2025. Available: https://www.geeksforgeeks.org/computer-vision/convnext/.
+* [3] Alzheimer's Disease Neuroimaging Initiative (ADNI), “ADNI Documentation.” Available: https://adni.loni.usc.edu/help-faqs/adni-documentation/.
+* [4] Z. Liu, H. Mao, C.-Y. Wu, C. Feichtenhofer, T. Darrell, and S. Xie, “A ConvNet for the 2020s,” in Proc. CVPR, 2022, pp. 11976–11986.
+* [5] O. E. Gundersen, S. Shamsaliei, and R. J. Isdahl, “Do machine learning platforms provide out-of-the-box reproducibility?,” Future Generation Computer Systems, vol. 126, pp. 34–47, Jan. 2022. https://doi.org/10.1016/j.future.2021.06.014.
+* [6] A. Chaddad, C. Desrosiers, and T. Niazi, “Deep radiomic analysis of MRI related to Alzheimer’s disease,” IEEE Access, vol. 6, pp. 58213–58221, 2018. https://doi.org/10.1109/ACCESS.2018.2871977
+* [7] M. Basereh, M. A. Abikenari, S. Sadeghzadeh, T. Dunn, R. Freichel, P. Siddarth, D. Ghahremani, H. Lavretsky, and V. P. Buch, “ConvNeXt-driven detection of Alzheimer’s disease: A benchmark study on expert-annotated AlzaSet MRI dataset across anatomical planes,” Diagnostics, vol. 15, no. 23, Art. no. 2997, Nov. 2025. https://doi.org/10.3390/diagnostics15232997
