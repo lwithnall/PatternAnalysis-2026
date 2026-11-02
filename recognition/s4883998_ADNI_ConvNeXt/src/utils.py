@@ -21,6 +21,7 @@ from dataset import NC_LABEL, AD_LABEL
 # RESOURCE RECORDINGS
 #######################
 
+
 def output_cuda_resource_usage(func):
     """
     Wrapper utility to output VRAM and runtime of supplied function
@@ -55,8 +56,8 @@ def output_cuda_resource_usage(func):
             print(f"Resource usage details for: {func.__name__}")
             print(f"\nTraining runtime: {runtime:.2f} seconds")
 
-            peak_allocated = torch.cuda.max_memory_allocated(device) / (1024 ** 2)
-            peak_reserved = torch.cuda.max_memory_reserved(device) / (1024 ** 2)
+            peak_allocated = torch.cuda.max_memory_allocated(device) / (1024**2)
+            peak_reserved = torch.cuda.max_memory_reserved(device) / (1024**2)
 
             print(f"Peak GPU memory allocated: {peak_allocated:.2f} MB")
             print(f"Peak GPU memory reserved:  {peak_reserved:.2f} MB")
@@ -110,6 +111,7 @@ def calculate_classification_metrics(y_true, y_pred, y_prob):
         "confusion_matrix": (tn, fp, fn, tp),
     }
 
+
 def calculate_confidence_metrics(y_true, y_pred, y_prob, confidence_threshold):
     """
     Calculate classification coverage and accuracy for high-confidence
@@ -140,6 +142,7 @@ def calculate_confidence_metrics(y_true, y_pred, y_prob, confidence_threshold):
         "high_confidence_accuracy": high_confidence_accuracy,
     }
 
+
 def calculate_computational_metrics(
     model: nn.Module,
     runtime: float,
@@ -152,9 +155,7 @@ def calculate_computational_metrics(
 
     # Model complexity.
     parameters = sum(p.numel() for p in model.parameters())
-    trainable_parameters = sum(
-        p.numel() for p in model.parameters() if p.requires_grad
-    )
+    trainable_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
     # Inference performance.
     latency = runtime / total_slices
@@ -162,13 +163,9 @@ def calculate_computational_metrics(
 
     # GPU memory usage.
     if device.type == "cuda":
-        peak_allocated = (
-            torch.cuda.max_memory_allocated(device) / (1024 ** 2)
-        )
+        peak_allocated = torch.cuda.max_memory_allocated(device) / (1024**2)
 
-        peak_reserved = (
-            torch.cuda.max_memory_reserved(device) / (1024 ** 2)
-        )
+        peak_reserved = torch.cuda.max_memory_reserved(device) / (1024**2)
     else:
         peak_allocated = float("nan")
         peak_reserved = float("nan")

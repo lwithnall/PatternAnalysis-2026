@@ -1,15 +1,11 @@
 from pathlib import Path
 from copy import deepcopy
+import yaml
 
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision.transforms import v2
-
-import matplotlib
-matplotlib.use("Agg")
-
-import matplotlib.pyplot as plt
 
 from sklearn.metrics import (
     precision_recall_fscore_support,
@@ -22,9 +18,19 @@ from transforms import MRINormalise
 from utils import output_cuda_resource_usage
 from plotting import plot_learning_curves
 
+#######################
+# DATA CONFIGURATIONS
+#######################
+
+
+YAML_CONVNEXT_PATH = Path("../config/convnext.yaml")
+
+with open(YAML_CONVNEXT_PATH, "r") as stream:
+    data_config = yaml.safe_load(stream)
+
 
 ##################
-# EPOCH HANDLERS 
+# EPOCH HANDLERS
 ##################
 
 
@@ -41,8 +47,7 @@ def train_epoch(
     Assumes loss_fn uses reduction="mean", so each batch's
     loss is averaged across its samples.
 
-    Returns:
-        Average loss and accuracy for the trained epoch
+    Returns average loss and accuracy for the trained epoch
     """
 
     model.train()
@@ -89,11 +94,9 @@ def evaluate_epoch(
 ):
     """
     Evaluate the model on one epoch
-
     Doesn't calculate gradients nor update model weights
 
-    Returns:
-        Average loss and accuracy across validation dataset
+    Returns average loss and accuracy across validation dataset
     """
 
     model.eval()
@@ -236,7 +239,9 @@ def train_model(
 
     for epoch in range(epochs):
         # Training
-        train_loss, train_accuracy = train_epoch(model, train_loader, loss_fn, optimiser, device)
+        train_loss, train_accuracy = train_epoch(
+            model, train_loader, loss_fn, optimiser, device
+        )
 
         # Validation
         val_loss, val_accuracy = evaluate_epoch(model, val_loader, loss_fn, device)
@@ -296,25 +301,26 @@ def train_model(
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Configuration
-    val_split = 0.2
-    random_state = 42
-    batch_size = 32
-    epochs = 20
-    save_path_root = Path("Models/")
-    
-    train_transforms = v2.Compose([
-        v2.RandomAffine(degrees=5, translate=(0.03, 0.03), scale=(0.97, 1.03), fill=0,),
-        MRINormalise(),
-        v2.ColorJitter(brightness=0.1, contrast=0.1),
-    ])
+    # Data transformers
+    train_transforms = v2.Compose(
+        [
+            v2.RandomAffine(
+                degrees=5,
+                translate=(0.03, 0.03),
+                scale=(0.97, 1.03),
+                fill=0,
+            ),
+            MRINormalise(),
+            v2.ColorJitter(brightness=0.1, contrast=0.1),
+        ]
+    )
 
     eval_transforms = v2.Compose([MRINormalise()])
 
     print("Getting datasets...")
     train_ds, val_ds, test_ds = generate_datasets(
-        DATA_DIR, 
-        validation_split=val_split,  
+        DATA_DIR,
+        validation_split=val_split,
         train_transforms=train_transforms,
         eval_transforms=eval_transforms,
         random_state=random_state,
@@ -322,14 +328,18 @@ if __name__ == "__main__":
 
     print("Getting preparing dataloaders...")
     train_loader, val_loader, _ = generate_dataloaders(
-        train_ds, val_ds, test_ds, batch_size=batch_size,
+        train_ds,
+        val_ds,
+        test_ds,
+        batch_size=batch_size,
     )
 
     print("Configuring ConvNeXt model...")
     convnext_model = ADNI_ConvNeXt(
-        drop_path_rate=0.2, layer_scale_init_value=1e-6,
-        depths=(2, 2, 4, 2  ),
-        dims=(48, 96, 192, 384),
+        drop_path_rate=0.5,
+        layer_scale_init_value=1e-6,
+        depths=(3, 3, 9, 3),
+        dims=(96, 192, 384, 768),
     ).to(device)
 
     next_loss_fn = nn.CrossEntropyLoss()
@@ -346,26 +356,26 @@ if __name__ == "__main__":
         next_optimiser,
         epochs,
         device,
-        save_path = save_path_root / "convnext.pt"
+        save_path=save_path_root / "convnext.pt",
     )
 
     del convnext_model, next_optimiser
 
-    print("Configuring CNN model...")
-    cnn_model = ADNICNN().to(device)
-    cnn_loss_fn = nn.CrossEntropyLoss()
-    cnn_optimiser = torch.optim.Adam(
-        cnn_model.parameters(), lr=0.001
-    )
+    # print("Configuring CNN model...")
+    # cnn_model = ADNICNN().to(device)
+    # cnn_loss_fn = nn.CrossEntropyLoss()
+    # cnn_optimiser = torch.optim.Adam(
+    #     cnn_model.parameters(), lr=0.001
+    # )
 
-    print("Training CNN...")
-    train_model(
-        cnn_model,
-        train_loader,
-        val_loader,
-        cnn_loss_fn,
-        cnn_optimiser,
-        epochs,
-        device,
-        save_path = save_path_root / "cnn.pt"
-    )
+    # print("Training CNN...")
+    # train_model(
+    #     cnn_model,
+    #     train_loader,
+    #     val_loader,
+    #     cnn_loss_fn,
+    #     cnn_optimiser,
+    #     epochs,
+    #     device,
+    #     save_path = save_path_root / "cnn.pt"
+    # )

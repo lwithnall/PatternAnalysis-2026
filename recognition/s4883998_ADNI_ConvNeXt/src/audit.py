@@ -8,21 +8,17 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from collections import Counter
 from dataset import (
-    AD_LABEL,
-    NC_LABEL,
-    DATA_DIR,
-    ADNISliceEntry,
-    get_patient_labels,
-    generate_datasets,
+    AD_LABEL, NC_LABEL, AD_NAME, NC_NAME, ADNI_DIR, VAL_SPLIT, RANDOM_STATE,
+    ADNISliceEntry, get_patient_labels, generate_datasets, slice_entry_idx_from_path
 )
+from plotting import save_fig
+
+AUDIT_RESULT_DIR = "AuditResults/"
 
 
-def _slice_entry_index(entry: ADNISliceEntry):
-    """
-    Extract the slice index of ADNI slice entry
-    e.g. ~/.../.../396531_78.jpeg -> 78
-    """
-    return int(entry.img_path.stem.split("_")[1])
+##############
+# DATA AUDIT
+##############
 
 
 def get_split_stats(split: str, entries: list[ADNISliceEntry]):
@@ -44,7 +40,7 @@ def get_split_stats(split: str, entries: list[ADNISliceEntry]):
     }
 
     # AD vs NC patient counts
-    for lbl, lbl_name in ((AD_LABEL, "AD"), (NC_LABEL, "NC")):
+    for lbl, lbl_name in ((AD_LABEL, AD_NAME), (NC_LABEL, NC_NAME)):
         patients = [p for p, l in patient_labels.items() if l == lbl]
         output[f"{lbl_name}_patients"] = len(patients)
         output[f"{lbl_name}_slices"] = sum(patient_counts[p] for p in patients)
@@ -59,10 +55,15 @@ def get_split_stats(split: str, entries: list[ADNISliceEntry]):
     }
 
     # Range of 'slicde indexes' found throughout data
-    idx = [_slice_entry_index(e) for e in entries]
+    idx = [slice_entry_idx_from_path(e.img_path) for e in entries]
     output["slice_index_range"] = [int(min(idx)), int(max(idx))]
 
     return output
+
+
+######################
+# DATA VISUALISATION
+######################
 
 
 def img_sample_grid(entries: list[ADNISliceEntry], grid_shape: tuple[int, int]):
@@ -78,7 +79,7 @@ def img_sample_grid(entries: list[ADNISliceEntry], grid_shape: tuple[int, int]):
     rows, cols = grid_shape
 
     fig, axs = plt.subplots(
-        rows, cols, figsize=(cols * 1.5, rows), layout="constrained", squeeze=False
+        rows, cols, figsize=(cols * 1.5, rows), layout="constrained"
     )
 
     for idx, ax in enumerate(axs.flat):
@@ -90,11 +91,10 @@ def img_sample_grid(entries: list[ADNISliceEntry], grid_shape: tuple[int, int]):
             with Image.open(entry.img_path) as img:
                 ax.imshow(img, cmap="gray")
 
-            label = "AD" if entry.label == AD_LABEL else "NC"
+            label = AD_NAME if entry.label == AD_LABEL else NC_NAME
             ax.set_title(f"Patient {entry.patient_id} ({label})")
 
-    plt.savefig(f"output_{entries[0].label}.png", dpi=300, bbox_inces="tight")
-    plt.close()
+    save_fig(fig, AUDIT_RESULT_DIR, f"output_{entries[0].label}.png")
 
 
 def print_split_stats(stats: dict):
@@ -125,7 +125,7 @@ def print_split_stats(stats: dict):
 
 
 if __name__ == "__main__":
-    datasets = generate_datasets(DATA_DIR, 0.2, 42)
+    datasets = generate_datasets(ADNI_DIR, VAL_SPLIT, RANDOM_STATE)
 
     named_datasets = zip(["Train", "Verification", "Test"], datasets)
     for name, ds in named_datasets:

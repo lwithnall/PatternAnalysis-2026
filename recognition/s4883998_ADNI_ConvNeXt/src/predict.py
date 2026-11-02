@@ -21,7 +21,7 @@ from plotting import generate_evaluation_plots
 from utils import (
     calculate_classification_metrics,
     calculate_computational_metrics,
-    calculate_confidence_metrics
+    calculate_confidence_metrics,
 )
 
 MODEL_DIR = Path("Models")
@@ -33,6 +33,7 @@ CLASS_NAMES = ["NC", "AD"]
 ####################
 # LOADING / CONFIG
 ####################
+
 
 def load_model(model: nn.Module, path: Path, device: torch.device) -> nn.Module:
     """Load and return model saved at path in evaluation mode"""
@@ -53,23 +54,20 @@ def load_model(model: nn.Module, path: Path, device: torch.device) -> nn.Module:
 # GETTING MODEL PREDICTIONS
 #############################
 
-def run_model_test(
-    model: nn.Module,
-    dataloader: DataLoader,
-    device: torch.device 
-):
+
+def run_model_test(model: nn.Module, dataloader: DataLoader, device: torch.device):
     """Run given model on test data to output predictions w/ probabilities"""
 
     model.eval()
 
-    slice_probabilities = [] # Classification probabilities
-    slice_labels = [] # Predicted label
+    slice_probabilities = []  # Classification probabilities
+    slice_labels = []  # Predicted label
 
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
         torch.cuda.synchronize(device)
 
-    start_time = time.perf_counter() # Time taken to run inference code
+    start_time = time.perf_counter()  # Time taken to run inference code
 
     with torch.inference_mode():
         for X, y in dataloader:
@@ -126,8 +124,8 @@ def print_evaluation_results(
 ):
     """
     Print classification, confidence and computational evaluation metrics.
-    
-    AI DECLARATION: FUNCTION MADE BY GPT; REFER TO AI DEC. ENTRY 4 
+
+    AI DECLARATION: FUNCTION MADE BY GPT; REFER TO AI DEC. ENTRY 4
     """
 
     print(f"\n{'=' * 60}")
@@ -193,8 +191,12 @@ def print_evaluation_results(
     print(f"Throughput:             {computational_metrics['throughput']:.2f} slices/s")
 
     if not np.isnan(computational_metrics["peak_allocated"]):
-        print(f"Peak GPU allocated:     {computational_metrics['peak_allocated']:.2f} MB")
-        print(f"Peak GPU reserved:      {computational_metrics['peak_reserved']:.2f} MB")
+        print(
+            f"Peak GPU allocated:     {computational_metrics['peak_allocated']:.2f} MB"
+        )
+        print(
+            f"Peak GPU reserved:      {computational_metrics['peak_reserved']:.2f} MB"
+        )
     else:
         print("GPU memory:             Unavailable (CPU inference)")
 
@@ -244,7 +246,7 @@ def find_failure_cases(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     y_ad_prob: np.ndarray,
-    top_n: int = 5
+    top_n: int = 5,
 ):
     """
     Identify the most confident false positives and false negatives.
@@ -276,17 +278,18 @@ def find_failure_cases(
         for i in indices[:top_n]:
             entry = entries[i]
 
-            cases.append({
-                "path": entry.img_path,
-                "patient_id": entry.patient_id,
-                "true_label": y_true[i],
-                "predicted_label": y_pred[i],
-                "ad_probability": y_ad_prob[i],
-                "error_confidence": (
-                    y_ad_prob[i] if y_true[i] == NC_LABEL
-                    else 1 - y_ad_prob[i]
-                ),
-            })
+            cases.append(
+                {
+                    "path": entry.img_path,
+                    "patient_id": entry.patient_id,
+                    "true_label": y_true[i],
+                    "predicted_label": y_pred[i],
+                    "ad_probability": y_ad_prob[i],
+                    "error_confidence": (
+                        y_ad_prob[i] if y_true[i] == NC_LABEL else 1 - y_ad_prob[i]
+                    ),
+                }
+            )
 
         return cases
 
@@ -317,15 +320,15 @@ def evaluate_model(
         model, dataloader, device
     )
 
-    y_true, y_pred, y_ad_prob = get_predictions(
-        slice_probabilities, slice_labels
-    )
+    y_true, y_pred, y_ad_prob = get_predictions(slice_probabilities, slice_labels)
 
     total_slices = len(slice_labels)
 
     # Calculating metrics
     classification_metrics = calculate_classification_metrics(
-        y_true, y_pred, y_ad_prob,
+        y_true,
+        y_pred,
+        y_ad_prob,
     )
 
     confidence_metrics = calculate_confidence_metrics(
@@ -368,10 +371,10 @@ def evaluate_model(
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     batch_size = 32
     confidence_threshold = 0.90
-    
+
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     eval_transforms = v2.Compose([MRINormalise()])
@@ -399,8 +402,8 @@ if __name__ == "__main__":
     convnext_model = ADNI_ConvNeXt(
         drop_path_rate=0.2,
         layer_scale_init_value=1e-6,
-        depths=(2, 2, 4, 2),
-        dims=(48, 96, 192, 384),
+        depths=(3, 3, 9, 3),
+        dims=(96, 192, 384, 768),
     )
 
     convnext_model = load_model(
@@ -425,30 +428,29 @@ if __name__ == "__main__":
 
     print("\nConvNeXt stuff done =====================\n\n")
 
-     # CNN IMPLEMENTATION ################
+    #  # CNN IMPLEMENTATION ################
 
-    print("Loading CNN...")
-    cnn_model = ADNICNN()
+    # print("Loading CNN...")
+    # cnn_model = ADNICNN()
 
-    cnn_model = load_model(
-        cnn_model,
-        MODEL_DIR / "cnn.pt",
-        device,
-    )
+    # cnn_model = load_model(
+    #     cnn_model,
+    #     MODEL_DIR / "cnn.pt",
+    #     device,
+    # )
 
-    print("Evaluating CNN...")
-    evaluate_model(
-        cnn_model,
-        test_loader,
-        confidence_threshold,
-        device,
-        "CNN",
-    )
+    # print("Evaluating CNN...")
+    # evaluate_model(
+    #     cnn_model,
+    #     test_loader,
+    #     confidence_threshold,
+    #     device,
+    #     "CNN",
+    # )
 
-    del cnn_model
+    # del cnn_model
 
-    if device.type == "cuda":
-        torch.cuda.empty_cache()
+    # if device.type == "cuda":
+    #     torch.cuda.empty_cache()
 
-    print("\nCNN stuff done =====================\n\n")
-
+    # print("\nCNN stuff done =====================\n\n")

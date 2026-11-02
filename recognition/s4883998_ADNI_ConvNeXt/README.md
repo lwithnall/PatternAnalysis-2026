@@ -252,7 +252,10 @@ Additional transformations were applied separately to the training and evaluatio
 ## Open Research Dilemma Investigation
 <u>Research Dilemma</u> </br>
 This investigation aims to evaluate whether increased architectural complexity provides meaningful improvmenet in the classification of Alzheimer's disease against ADNI MRI images. Model complexity is often thought to correspond to representational capacity, and consequently, improved classification performance. ConvNeXt and CNN models will be trained and tested on the aforementioned ADNI dataset to attempt to ascertain whether the complexity to accuracy debate has any merit. Both models produced slice-level predictions, which were aggregated into patient-level predictions by averaging the predicted AD probabilities across each patient's slices. 
-</br></br>
+</br>
+
+<u>A Brief Look at Parameter Evolution</u> </br>
+Model parameters in use were found by testing how changes impacted test results. Prior to the use of the `RandomAffine` and `ColorJitter` image transforms, the ConvNeXt model would heavily overfit to the training data, often reaching training accuracies of around 78% with validation accuracies of around 40%. Implementing these made the accuracies implement together, so they were about the same. A typical ConvNeXt model consists of 4 sequential 'ConvNeXt blocks' (convolution / activaiton function layers used for feature extraction), however limiting the model to 3 layers caused an evaluation accuracy increase of around 5%. The ConvNeXt model is limited to 15 epoch iterations, as testing showed that further training had no meaningful impact on validation results. Decreasing ConvNeXt block depths from (3, 3, 9, 3) to (2, 2, 4, 2), and channel dimensions from (96, 192, 384, 768) to (48, 96, 192, 384) also contributed.
 
 <u>Quantitative Benchmarking</u> </br>
 

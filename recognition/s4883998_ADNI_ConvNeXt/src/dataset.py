@@ -1,20 +1,36 @@
 from pathlib import Path
 from dataclasses import dataclass
-from PIL import Image
 from typing import Callable
 
+import yaml
 import numpy as np
-import sklearn.model_selection
 import torch
+
+from PIL import Image
+from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 
-DATA_DIR = Path("/home/groups/comp3710/ADNI/AD_NC")
-IMAGE_EXTENSION = ".jpeg"
+#######################
+# DATA CONFIGURATIONS
+#######################
 
-NUM_CLASSES = 2
+YAML_DATA_PATH = Path("../config/data.yaml")
 
-NC_LABEL = 0  # Normal Control
-AD_LABEL = 1  # Alzheimer's Disease
+with open(YAML_DATA_PATH, "r") as stream:
+    data_config = yaml.safe_load(stream)
+
+    ADNI_DIR = Path(data_config["adni-dir"])
+    IMAGE_EXTENSION = data_config["image-extension"]
+
+    NUM_CLASSES = data_config["num-classifications"]
+    NC_LABEL = data_config["nc-label"]  # Normal Control
+    AD_LABEL = data_config["ad-label"]  # Alzheimer's Disease
+
+    NC_NAME = data_config["nc-name"]
+    AD_NAME = data_config["ad-name"]
+
+    VAL_SPLIT = data_config["validation-split"]
+    RANDOM_STATE = data_config["random-state"]
 
 
 # Basic slice entry object
@@ -76,6 +92,14 @@ def _patient_id_from_path(image_path: Path) -> int:
     return int(image_path.stem.split("_")[0])
 
 
+def slice_entry_idx_from_path(image_path: Path) -> int:
+    """
+    Extract the slice index of ADNI slice entry
+    e.g. ~/.../.../396531_78.jpeg -> 78
+    """
+    return int(image_path.stem.split("_")[1])
+
+
 def _collect_ADNI_slice_entries(root: Path, split: str) -> list[ADNISliceEntry]:
     """
     Collect ADNI slice entries from the AD and NC directories
@@ -91,13 +115,14 @@ def _collect_ADNI_slice_entries(root: Path, split: str) -> list[ADNISliceEntry]:
     entries: list[ADNISliceEntry] = []
 
     # Directories
-    ad_path = root / split / "AD"
-    nc_path = root / split / "NC"
+    ad_path = root / split / AD_NAME
+    nc_path = root / split / NC_NAME
 
     for label, path in ((AD_LABEL, ad_path), (NC_LABEL, nc_path)):
         if not path.is_dir():
             raise ValueError(f"Missing directory: {path}")
 
+        # Register all images found in directory
         for img_path in path.iterdir():
             if not img_path.is_file() or img_path.suffix.lower() != IMAGE_EXTENSION:
                 continue
@@ -136,14 +161,14 @@ def get_patient_labels(entries: list[ADNISliceEntry]) -> dict[int, int]:
     return patient_labels
 
 
-##############
-# GENERATORS
-##############
+##########################
+# DATASETS / DATALOADERS
+##########################
 
 
 def generate_datasets(
-    root: Path, 
-    validation_split: float, 
+    root: Path,
+    validation_split: float,
     random_state: int,
     train_transforms: Callable | None = None,
     eval_transforms: Callable | None = None,
@@ -158,6 +183,8 @@ def generate_datasets(
         random_state : seed for random generators
         train_transforms : transformers to run on train datasets
         eval_transforms : transforms to run on evaluation / test datasets
+
+    Returns a tuple of train, validation (NULL if 0.0 split), and test datasets
     """
 
     if not 0 <= validation_split < 1:
@@ -175,14 +202,14 @@ def generate_datasets(
     if overlap:
         raise ValueError(f"Patient overlap found between train and test: {overlap}")
 
-    # Patient info verief!!
+    # Patient info veriefed!!
     # Can now send datasets (Hip Hip Hooray)
 
     if validation_split == 0.0:
         return (
-            ADNIDataset(train_entries, train_transforms), 
-            None, 
-            ADNIDataset(test_entries, eval_transforms)
+            ADNIDataset(train_entries, train_transforms),
+            None,
+            ADNIDataset(test_entries, eval_transforms),
         )
 
     # Partition train data into train and validation sets
@@ -190,7 +217,7 @@ def generate_datasets(
     labels = np.array([train_labels[pid] for pid in patient_ids])
 
     # Splitting up list of unique patient IDs
-    train_ids, val_ids = sklearn.model_selection.train_test_split(
+    train_ids, val_ids = train_test_split(
         patient_ids,
         test_size=validation_split,
         random_state=random_state,

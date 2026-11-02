@@ -5,6 +5,7 @@ Used to assess Alzheimer's presence in ADNI MRI images.
 ConvNeXt references:
 1. "ConvNet for the 2020s" (Liu et al, 2022)
 2. https://www.geeksforgeeks.org/computer-vision/convnext/
+3. PyTorch Image Models (timm) module
 """
 
 import torch
@@ -19,7 +20,7 @@ from dataset import NUM_CLASSES
 
 class ADNICNN(nn.Module):
     """
-    Basic CNN implementation to classify AD in ADNI Dataset
+    Basic CNN implementation to classify AD / NC patients in ADNI Dataset
     """
 
     def __init__(self):
@@ -64,7 +65,6 @@ class ADNICNN(nn.Module):
 class DropPath2d(nn.Module):
     """
     Stochastically drop branches during training based on drop prob
-    REF: PyTorch Image Models (timm) module
 
     Args:
         drop_prob: probability of any given branch being 'dropped'

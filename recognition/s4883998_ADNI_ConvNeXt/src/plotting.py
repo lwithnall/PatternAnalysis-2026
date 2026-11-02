@@ -1,4 +1,3 @@
-
 from pathlib import Path
 
 import numpy as np
@@ -14,7 +13,6 @@ from sklearn.metrics import (
 )
 
 from dataset import NC_LABEL, AD_LABEL
-
 
 CLASS_NAMES = ["NC", "AD"]
 CONFIDENCE_THRESHOLD = 0.90
@@ -82,7 +80,11 @@ def plot_confusion_matrix(
     Plot raw and row-normalised confusion matrices.
     """
 
-    cm = confusion_matrix(y_true,y_pred,labels=[NC_LABEL, AD_LABEL],)
+    cm = confusion_matrix(
+        y_true,
+        y_pred,
+        labels=[NC_LABEL, AD_LABEL],
+    )
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
 
@@ -98,7 +100,9 @@ def plot_confusion_matrix(
     for i in range(2):
         for j in range(2):
             axes[0].text(
-                j, i, str(cm[i, j]),
+                j,
+                i,
+                str(cm[i, j]),
                 ha="center",
                 va="center",
                 fontsize=12,
@@ -131,7 +135,9 @@ def plot_confusion_matrix(
     for i in range(2):
         for j in range(2):
             axes[1].text(
-                j, i, f"{cm_normalised[i, j]:.2%}",
+                j,
+                i,
+                f"{cm_normalised[i, j]:.2%}",
                 ha="center",
                 va="center",
                 fontsize=12,
@@ -290,9 +296,7 @@ def plot_confidence_coverage(
         coverage.append(accepted.mean())
 
         if np.any(accepted):
-            selective_accuracy.append(
-                correctness[accepted].mean()
-            )
+            selective_accuracy.append(correctness[accepted].mean())
         else:
             selective_accuracy.append(np.nan)
 
