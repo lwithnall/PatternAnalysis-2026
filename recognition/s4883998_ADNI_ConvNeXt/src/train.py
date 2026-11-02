@@ -12,7 +12,7 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
-from dataset import DATA_DIR, generate_datasets, generate_dataloaders
+from dataset import ADNI_DIR, VAL_SPLIT, RANDOM_STATE, generate_datasets, generate_dataloaders
 from models import ADNICNN, ADNI_ConvNeXt
 from transforms import MRINormalise
 from utils import output_cuda_resource_usage
@@ -26,8 +26,22 @@ from plotting import plot_learning_curves
 YAML_CONVNEXT_PATH = Path("../config/convnext.yaml")
 
 with open(YAML_CONVNEXT_PATH, "r") as stream:
-    data_config = yaml.safe_load(stream)
+    convnext_config = yaml.safe_load(stream)
 
+    SAVE_PATH_ROOT = Path(convnext_config['save-path-root'])
+    BATCH_SIZE = convnext_config['batch-size']
+    EPOCHS = convnext_config['epochs']
+
+    DROP_PATH_RATE = convnext_config['drop-path-rate']
+    LAYER_SCALE_INIT_VAL = convnext_config['layer-scale-init-val']
+    DEPTHS = tuple(convnext_config['depths'])
+    DIMS = tuple(convnext_config['dims'])
+
+    LEARNING_RATE = convnext_config['learning-rate']
+    WEIGHT_DECAY = convnext_config['weight-decay']
+
+    RANDOM_AFFINE_SETTINGS = convnext_config['random-affine']
+    COLOUR_JITTER_CONFIG = convnext_config['colour-jitter']
 
 ##################
 # EPOCH HANDLERS
@@ -304,14 +318,9 @@ if __name__ == "__main__":
     # Data transformers
     train_transforms = v2.Compose(
         [
-            v2.RandomAffine(
-                degrees=5,
-                translate=(0.03, 0.03),
-                scale=(0.97, 1.03),
-                fill=0,
-            ),
+            v2.RandomAffine(**RANDOM_AFFINE_SETTINGS),
+            v2.ColorJitter(**COLOUR_JITTER_CONFIG),
             MRINormalise(),
-            v2.ColorJitter(brightness=0.1, contrast=0.1),
         ]
     )
 
@@ -319,11 +328,11 @@ if __name__ == "__main__":
 
     print("Getting datasets...")
     train_ds, val_ds, test_ds = generate_datasets(
-        DATA_DIR,
-        validation_split=val_split,
+        ADNI_DIR,
+        validation_split=VAL_SPLIT,
         train_transforms=train_transforms,
         eval_transforms=eval_transforms,
-        random_state=random_state,
+        random_state=RANDOM_STATE,
     )
 
     print("Getting preparing dataloaders...")
@@ -331,20 +340,20 @@ if __name__ == "__main__":
         train_ds,
         val_ds,
         test_ds,
-        batch_size=batch_size,
+        batch_size=BATCH_SIZE,
     )
 
     print("Configuring ConvNeXt model...")
     convnext_model = ADNI_ConvNeXt(
-        drop_path_rate=0.5,
-        layer_scale_init_value=1e-6,
-        depths=(3, 3, 9, 3),
-        dims=(96, 192, 384, 768),
+        drop_path_rate=DROP_PATH_RATE,
+        layer_scale_init_value=LAYER_SCALE_INIT_VAL,
+        depths=DEPTHS,
+        dims=DIMS,
     ).to(device)
 
     next_loss_fn = nn.CrossEntropyLoss()
     next_optimiser = torch.optim.AdamW(
-        convnext_model.parameters(), lr=1e-4, weight_decay=0.1
+        convnext_model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY
     )
 
     print("Training ConvNext...")
@@ -354,9 +363,9 @@ if __name__ == "__main__":
         val_loader,
         next_loss_fn,
         next_optimiser,
-        epochs,
+        EPOCHS,
         device,
-        save_path=save_path_root / "convnext.pt",
+        save_path=SAVE_PATH_ROOT / "convnext.pt",
     )
 
     del convnext_model, next_optimiser

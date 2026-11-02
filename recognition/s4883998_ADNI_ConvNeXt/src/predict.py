@@ -1,5 +1,6 @@
 from pathlib import Path
 import time
+import yaml
 import numpy as np
 
 import torch
@@ -8,10 +9,13 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import v2
 
 from dataset import (
-    DATA_DIR,
+    ADNI_DIR,
     generate_datasets,
     NC_LABEL,
     AD_LABEL,
+    NC_NAME,
+    AD_NAME,
+    RANDOM_STATE
 )
 
 from models import ADNICNN, ADNI_ConvNeXt
@@ -24,10 +28,31 @@ from utils import (
     calculate_confidence_metrics,
 )
 
-MODEL_DIR = Path("Models")
-OUTPUT_DIR = MODEL_DIR / "evaluation"
+#######################
+# DATA CONFIGURATIONS
+#######################
 
-CLASS_NAMES = ["NC", "AD"]
+
+YAML_CONVNEXT_PATH = Path("../config/convnext.yaml")
+
+with open(YAML_CONVNEXT_PATH, "r") as stream:
+    convnext_config = yaml.safe_load(stream)
+
+    SAVE_PATH_ROOT = Path(convnext_config['save-path-root'])
+    OUTPUT_DIR = SAVE_PATH_ROOT / "evaluation"
+    BATCH_SIZE = convnext_config['batch-size']
+    EPOCHS = convnext_config['epochs']
+
+    DROP_PATH_RATE = convnext_config['drop-path-rate']
+    LAYER_SCALE_INIT_VAL = convnext_config['layer-scale-init-val']
+    DEPTHS = tuple(convnext_config['depths'])
+    DIMS = tuple(convnext_config['dims'])
+
+    LEARNING_RATE = convnext_config['learning-rate']
+    WEIGHT_DECAY = convnext_config['weight-decay']
+    CONFIDENCE_THRESHOLD = convnext_config['confidence-threshold']
+
+CLASS_NAMES = [NC_NAME, AD_NAME]
 
 
 ####################
@@ -61,7 +86,7 @@ def run_model_test(model: nn.Module, dataloader: DataLoader, device: torch.devic
     model.eval()
 
     slice_probabilities = []  # Classification probabilities
-    slice_labels = []  # Predicted label
+    slice_true_labels = []  # Predicted label
 
     if device.type == "cuda":
         torch.cuda.reset_peak_memory_stats(device)
@@ -78,13 +103,13 @@ def run_model_test(model: nn.Module, dataloader: DataLoader, device: torch.devic
             probabilties = torch.softmax(logits, dim=1).cpu()
 
             slice_probabilities.extend(probabilties.tolist())
-            slice_labels.extend(y.cpu().tolist())
+            slice_true_labels.extend(y.cpu().tolist())
 
     if device.type == "cuda":
         torch.cuda.synchronize(device)
 
     runtime = time.perf_counter() - start_time
-    return slice_probabilities, slice_labels, runtime
+    return slice_probabilities, slice_true_labels, runtime
 
 
 def get_predictions(
@@ -117,7 +142,6 @@ def get_predictions(
 def print_evaluation_results(
     model_name: str,
     total_slices: int,
-    confidence_threshold: float,
     classification_metrics: dict,
     confidence_metrics: dict,
     computational_metrics: dict,
@@ -172,7 +196,7 @@ def print_evaluation_results(
     print("CONFIDENCE METRICS")
     print(f"{'-' * 60}")
 
-    print(f"Confidence threshold:      {confidence_threshold:.0%}")
+    print(f"Confidence threshold:      {CONFIDENCE_THRESHOLD:.0%}")
     print(f"Coverage:                  {confidence_metrics['coverage']:.2%}")
     print(
         f"High-confidence accuracy: "
@@ -307,7 +331,6 @@ def find_failure_cases(
 def evaluate_model(
     model: nn.Module,
     dataloader: DataLoader,
-    confidence_threshold: float,
     device: torch.device,
     model_name: str,
 ):
@@ -332,7 +355,7 @@ def evaluate_model(
     )
 
     confidence_metrics = calculate_confidence_metrics(
-        y_true, y_pred, y_ad_prob, confidence_threshold
+        y_true, y_pred, y_ad_prob, CONFIDENCE_THRESHOLD
     )
 
     computational_metrics = calculate_computational_metrics(
@@ -343,7 +366,6 @@ def evaluate_model(
     print_evaluation_results(
         model_name,
         total_slices,
-        confidence_threshold,
         classification_metrics,
         confidence_metrics,
         computational_metrics,
@@ -372,9 +394,6 @@ def evaluate_model(
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    batch_size = 32
-    confidence_threshold = 0.90
-
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     eval_transforms = v2.Compose([MRINormalise()])
@@ -382,16 +401,16 @@ if __name__ == "__main__":
     # Load test dataset
     print("Loading test dataset...")
     _, _, test_ds = generate_datasets(
-        DATA_DIR,
+        ADNI_DIR,
         validation_split=0.0,
-        random_state=42,
+        random_state=RANDOM_STATE,
         eval_transforms=eval_transforms,
     )
 
     # Test dataloader
     test_loader = DataLoader(
         test_ds,
-        batch_size=batch_size,
+        batch_size=BATCH_SIZE,
         shuffle=False,
     )
 
@@ -400,15 +419,15 @@ if __name__ == "__main__":
     # Loading saved model
     print("Loading ConvNeXt...")
     convnext_model = ADNI_ConvNeXt(
-        drop_path_rate=0.2,
-        layer_scale_init_value=1e-6,
-        depths=(3, 3, 9, 3),
-        dims=(96, 192, 384, 768),
+        drop_path_rate=DROP_PATH_RATE,
+        layer_scale_init_value=LAYER_SCALE_INIT_VAL,
+        depths=DEPTHS,
+        dims=DIMS,
     )
 
     convnext_model = load_model(
         convnext_model,
-        MODEL_DIR / "convnext.pt",
+        SAVE_PATH_ROOT / "convnext.pt",
         device,
     )
 
@@ -416,7 +435,6 @@ if __name__ == "__main__":
     evaluate_model(
         convnext_model,
         test_loader,
-        confidence_threshold,
         device,
         "ConvNeXt",
     )
@@ -428,29 +446,28 @@ if __name__ == "__main__":
 
     print("\nConvNeXt stuff done =====================\n\n")
 
-    #  # CNN IMPLEMENTATION ################
+     # CNN IMPLEMENTATION ################
 
-    # print("Loading CNN...")
-    # cnn_model = ADNICNN()
+    print("Loading CNN...")
+    cnn_model = ADNICNN()
 
-    # cnn_model = load_model(
-    #     cnn_model,
-    #     MODEL_DIR / "cnn.pt",
-    #     device,
-    # )
+    cnn_model = load_model(
+        cnn_model,
+        SAVE_PATH_ROOT / "cnn.pt",
+        device,
+    )
 
-    # print("Evaluating CNN...")
-    # evaluate_model(
-    #     cnn_model,
-    #     test_loader,
-    #     confidence_threshold,
-    #     device,
-    #     "CNN",
-    # )
+    print("Evaluating CNN...")
+    evaluate_model(
+        cnn_model,
+        test_loader,
+        device,
+        "CNN",
+    )
 
-    # del cnn_model
+    del cnn_model
 
-    # if device.type == "cuda":
-    #     torch.cuda.empty_cache()
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
 
-    # print("\nCNN stuff done =====================\n\n")
+    print("\nCNN stuff done =====================\n\n")

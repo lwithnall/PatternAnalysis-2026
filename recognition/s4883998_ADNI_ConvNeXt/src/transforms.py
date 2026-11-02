@@ -21,3 +21,4 @@ class MRINormalise:
         image = image.masked_fill(~mask, 0.0).clamp_min(1e-6)
 
         return image
+    

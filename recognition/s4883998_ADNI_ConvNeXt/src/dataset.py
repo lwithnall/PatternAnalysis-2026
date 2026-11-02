@@ -25,13 +25,11 @@ with open(YAML_DATA_PATH, "r") as stream:
     NUM_CLASSES = data_config["num-classifications"]
     NC_LABEL = data_config["nc-label"]  # Normal Control
     AD_LABEL = data_config["ad-label"]  # Alzheimer's Disease
-
     NC_NAME = data_config["nc-name"]
     AD_NAME = data_config["ad-name"]
 
     VAL_SPLIT = data_config["validation-split"]
     RANDOM_STATE = data_config["random-state"]
-
 
 # Basic slice entry object
 # Metadata for single MRI image path

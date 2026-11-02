@@ -13,15 +13,3 @@ ad-name: "AD"
 # Split configuration
 random-state: 42
 validation-split: 0.2
-
-# Image transform configuration
-random-affine:
-  degrees: 5
-  translate: 0.03
-  scale-min: 0.97
-  scale-max: 1.03 
-  fill: 0
-
-colour-jitter:
-  brightness: 0.1
-  contrast: 0.1
